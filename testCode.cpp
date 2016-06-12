@@ -2,8 +2,8 @@
 #include"setting.h"
 #include"myCLib.h"
 #include"opencvLib.h"
-#include"computeChnFtr.h"
-#include"constructFeatureIntHist.h"
+#include"computeFtr.h"
+#include"constructFtrIntHist.h"
 #include<time.h>
 #include<iostream>
 #include<fstream>
@@ -16,7 +16,7 @@ void testCode(){
 
 }
 
-/*测试computeChnFtr(ACF)正确结果保存在computeChnFtrTest.txt中*/
+/*测试computeFtr(ACF)正确结果保存在computeChnFtrTest.txt中*/
 //void testCode(){
 //
 //	//freopen("computeChnFtrTest.txt", "a", stdout);
@@ -35,11 +35,11 @@ void testCode(){
 //					4, 8, 7, 10,  
 //					2, 5, 12, 6 };
 //
-//	constructFeatureIntHist(I, IMG_R, IMG_C);
-//	int chnFtrDim = (IMG_R / SHRINK)*(IMG_C / SHRINK) + (IMG_R / SHRINK)*(IMG_C / SHRINK) +
+//	constructFtrIntHist(I, IMG_R, IMG_C);
+//	int ftrDim = (IMG_R / SHRINK)*(IMG_C / SHRINK) + (IMG_R / SHRINK)*(IMG_C / SHRINK) +
 //		            (IMG_R / BIN_SIZE)*(IMG_C / BIN_SIZE)*NUM_ORIENT;
 //	rect r = { 0, 0, 4, 4 };
-//	computeChnFtr(I, IMG_R, IMG_C, r,chnFtr,chnFtrDim);
+//	computeFtr(I, IMG_R, IMG_C, r,chnFtr,ftrDim);
 //
 //	int acc = 0;
 //	for (int j = 0; j < NUM_ORIENT+ 2; j++)

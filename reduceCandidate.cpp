@@ -6,7 +6,16 @@ using namespace cv;
 static int intHist[MAX_IN_IMG_R + 1][MAX_IN_IMG_C + 1] = { 0 };
 static void constructIntHist(const UInt8 *pImg, int row, int col, int threshold);
 
-void processDisparity(const Mat &src){
+void processDisparity(const Mat &mat){
+
+	cv::Mat src = mat.clone();
+	if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
+		if (src.rows > src.cols)
+			cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R / src.rows*src.cols), MAX_IN_IMG_R));
+		else
+			cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C / src.cols*src.rows)));
+	}
+	assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
 
 	const int THRESHOLD = 16;
 	const int ROW = src.rows;
@@ -15,24 +24,10 @@ void processDisparity(const Mat &src){
 	static UInt8 pImg[MAX_IN_IMG_SIZE] = { 0 };
 	Mat2ImgPointer(src, pImg);
 
-	double duration = static_cast<double>(getTickCount());
+	//double duration = static_cast<double>(getTickCount());
 	constructIntHist(pImg, ROW, COL,THRESHOLD);
-	duration = static_cast<double>(getTickCount()) - duration;
-	printf("processDisparity duration time: %fms\n", 1000.0 * duration / getTickFrequency());
-
-	//for (int j = 0; j < ROW; ++j){
-	//	for (int i = 0; i < COL; ++i){
-	//		if (pImg[j*COL + i] > THRESHOLD)
-	//			pImg[j*COL + i] = 255;
-	//		else
-	//			pImg[j*COL + i] = 0;
-	//	}
-	//}
-
-	//Mat dst = ImgPointer2Mat(pImg, ROW, COL);
-	//static string winName = "processedDisparity1";
-	//winName += "1";
-	//namedWindow(winName); imshow(winName, dst); waitKey();
+	//duration = static_cast<double>(getTickCount()) - duration;
+	//printf("processDisparity duration time: %fms\n", 1000.0 * duration / getTickFrequency());
 
 }
 

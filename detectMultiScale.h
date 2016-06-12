@@ -4,16 +4,21 @@
 #include"opencvLib.h"
 using namespace cv;
 
-void detectMultiScale(Mat &src, int imgR, int imgC,
-	int winR, int winC, int winStrideR, int winStrideC, float scale, bool isGetHard);
+typedef struct DetectOpt{
+	int winR;
+	int winC;
+	int winStrideR;
+	int winStrideC;
+	float scale;
+	bool isUseDp;  // 是否使用视差
+	bool isPostPro;// 是否后处理
+	bool isGetHard;
+}DetectOpt;
 
-void detectMultiClassifier(Mat &src, int imgR, int imgC,
-	int winR, int winC, int winStrideR, int winStrideC, float scale);
+void detectMultiScale(Mat &src, int imgR, int imgC, DetectOpt detectOpt);
+void detectMultiClassifier(Mat &src, int imgR, int imgC, DetectOpt detectOpt);
 
-//void detectMultiScaleNoResize(Mat &src, int imgR, int imgC,
-//	int winR, int winC, int winStrideR, int winStrideC, float scale);
-//void detectMultiScaleNoTxt(Mat &src, int imgR, int imgC,
-//	int winR, int winC, int winStrideR, int winStrideC, float scale);
-//void detectMultiClassifiers(Mat &src, int imgR, int imgC,
-//	int winR, int winC, int winStrideR, int winStrideC, float scale);
+//void detectMultiClassifier(Mat &src, int imgR, int imgC,
+//	int winR, int winC, int winStrideR, int winStrideC, float scale, bool isUseDp, bool isPostPro);
+
 #endif

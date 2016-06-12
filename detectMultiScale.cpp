@@ -1,176 +1,207 @@
 #include"myCLib.h"
 #include"setting.h"
-#include"detectMultiScale.h"
-#include"circlePerson.h"
-#include"computeChnFtr.h"
-#include"constructFeatureIntHist.h"
-#include"AdaboostPredict.h"
+#include"postPro.h"
+#include"computeFtr.h"
+#include"constructFtrIntHist.h"
+#include"classify.h"
+#include"RFPredict.h"
 #include"getHardFromNeg.h"
 #include"reduceCandidate.h"
-
+#include"detectMultiScale.h"
+#include<iostream>
 #include"opencvLib.h"
 using namespace cv;
 
 static inline int getZoomNum(int imgR, int imgC, int winR, int winC, float scale){
-
 	assert(scale > 1);
-
 	int zoomNumR = log((float)imgR / winR) / log(scale);
 	int zoomNumC = log((float)imgC / winC) / log(scale);
 	int zoomNum = zoomNumR > zoomNumC ? zoomNumC : zoomNumR;
 	printf("zoomNum:%d\n", zoomNum);
-	return zoomNum;
+	return zoomNum > 0 ? zoomNum : 0;
 }
 
-void detectMultiScale(Mat &src, int imgR, int imgC, 
-	int winR, int winC, int winStrideR, int winStrideC,float scale, bool isGetHard){
+void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
+	/*zoom out image if its size is too big*/
+	if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
+		if (src.rows > src.cols)
+			cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R*1.0f / src.rows*src.cols), MAX_IN_IMG_R));
+		else
+			cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C*1.0f / src.cols*src.rows)));
+		std::cout <<"image is resized" <<"size: " << src.rows << " x " << src.cols << std::endl;
+	}
+	assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
 
+	int imgR = src.rows;
+	int imgC = src.cols;
+	int winR = detectOpt.winR;
+	int winC = detectOpt.winC;
+	int winStrideR = detectOpt.winStrideR;
+	int winStrideC = detectOpt.winStrideC;
+	float scale = detectOpt.scale;
+
+	Mat srcGray;
+	if (src.channels() > 1) cv::cvtColor(src, srcGray, CV_BGR2GRAY);
+	else srcGray = src;
 	int zoomNum = getZoomNum(imgR, imgC, winR, winC, scale);
-
-	static float chnFtrForDetect[MAX_CHN_FTR_DIM] = {.0f};
-
+	int ftrDim = getFtrDim(winR, winC);
+	float *pFtrForDetect = new float[ftrDim];
 	int afterZoomR, afterZoomC;
-	static UInt8 afterZoomImg[MAX_IN_IMG_SIZE];
 
-	int trueCount = 0;
-	int totalWinCount = 0;
-
+	int trueWinCount = 0; int totalWinCount = 0;
+	vector<Bbox> bb;
 	vector<Rect> found;
-
-	int chnFtrDim = (winR / SHRINK)*(winC / SHRINK) +
-					(winR / SHRINK)*(winC / SHRINK) +
-					(winR / BIN_SIZE)*(winC / BIN_SIZE)*NUM_ORIENT;
-
-	int zi = 0;	
-	for (zi = 0; zi <= zoomNum; zi++){
-
+	vector<float> fScore;
+	//zoomNum = 0;//CHANGED
+	for (int zi = 0; zi <= zoomNum; zi++){
 		float ratio = pow(scale, (float)zi);
 		afterZoomR = imgR / ratio;
 		afterZoomC = imgC / ratio;
+		
+		Mat srcZoom; cv::resize(srcGray, srcZoom, Size(afterZoomC, afterZoomR));
+		constructFtrIntHist(srcZoom);
 
-		Mat srcZoom;
-		cv::resize(src, srcZoom, Size(afterZoomC, afterZoomR));
-		Mat2ImgPointer(srcZoom, afterZoomImg);
-		//double duration_all = static_cast<double>(getTickCount());
-		
-		//double duration = static_cast<double>(getTickCount());		
-		constructFeatureIntHist(afterZoomImg, afterZoomR, afterZoomC);
-		//duration = static_cast<double>(getTickCount()) - duration;
-       // printf("construct integral image time: %fms\n", 1000.0 * duration / getTickFrequency());
-		
 		int winStepNumR = (afterZoomR - winR) / winStrideR + 1; //tip£ºint div int is int
 		int winStepNumC = (afterZoomC - winC) / winStrideC + 1;
 		int wr = 0, wc = 0;
 		for (wr = 0; wr < winStepNumR; wr++){
 			int startR = wr*winStrideR;
 			for (wc = 0; wc < winStepNumC; wc++){
-
+				totalWinCount++;
 				int startC = wc*winStrideC;
 
-				rect r = { startC, startR, winC, winR};
-				computeChnFtr(afterZoomImg, afterZoomR, afterZoomC, r, chnFtrForDetect, chnFtrDim);
-				float score = .0f; adaboostPredict(chnFtrForDetect, 1, chnFtrDim, &score,4);
-				
-				totalWinCount++;
+				rect w = { startC, startR, winC, winR };
+				int ftrDim = getFtrDim(winR, winC);
+				computeFtr(afterZoomR, afterZoomC, w, pFtrForDetect, ftrDim);
+
+				//float score = .0f; adaPredictPerson(pFtrForDetect, 1,ftrDim, &score, 1);
+				float carScore = adaboostPredictCar(pFtrForDetect);
+				float bmScore =  adaboostPredictBm(pFtrForDetect);
+				ObjectType obj = carScore > bmScore ? CAR : BM;
+				float score = carScore > bmScore ? carScore : bmScore;
+				//ObjectType obj = BM;
+				//float score = bmScore;
+				if (score <= 0) continue;
+
 				int x = 0, y = 0, width = 0, height = 0;
-				if (score>0){ 
-					y = (startR + 0.5)*imgR / afterZoomR - 0.5;
+				y = (startR + 0.5)*imgR / afterZoomR - 0.5;
+				x = (startC + 0.5)*imgC / afterZoomC - 0.5;
+				height = winR*ratio;  width = winC*ratio;
+				Rect r(x, y, width, height); 
+				found.push_back(r); fScore.push_back(score);
+				Bbox b = { r, score, obj };
+				bb.push_back(b);
+				trueWinCount++;		 		
+				/*double duration_detect = static_cast<double>(getTickCount());
+				int hs = rfPredict(pFtrForDetect);
+				duration_detect = static_cast<double>(getTickCount()) - duration_detect;
+				printf("predict once duration time: %fms\n", 1000.0 * duration_detect / getTickFrequency());			
+				assert(hs <= 4);
+				if (hs<4){
+					trueWinCount++;
+					int x, y, width, height;
 					x = (startC + 0.5)*imgC / afterZoomC - 0.5;
-					height = winR*ratio;  width = winC*ratio;
-					Rect rect(x, y, width, height); found.push_back(rect);
-					trueCount++;
-				}
+					y = (startR + 0.5)*imgR / afterZoomR - 0.5;
+					width = winC*ratio; height = winR*ratio;  
+
+					Rect rect(x, y, width, height);
+					ObjectType classNum[] = { CAR, BIKE, ELECBIKE, ROAD };
+					ObjectType obType = classNum[hs];
+					Bbox bbTmp = { rect, 0, obType };
+					bb.push_back(bbTmp);
+				}*/
 			}
 		}
-		//duration_all = static_cast<double>(getTickCount()) - duration_all;
-		//printf("total duration time: %fms\n", 1000.0 * duration_all / getTickFrequency());
-	}	
+	}
 
 	printf("totalWinCount: %d\n", totalWinCount);
-	printf("trueCount: %d\n", trueCount); 
+	printf("trueWinCount: %d\n", trueWinCount);
 
-	if (trueCount > 0){
-		if (!isGetHard)  { circlePerson(src, found, false); } // postProcessing and circle persons
-		else             { saveHardPics(src, found); }
+	if (trueWinCount > 0){
+		if (detectOpt.isGetHard)  saveHardPics(srcGray, found);
+	    else bbNmsMultiClass(src, bb, detectOpt.isPostPro);
+		//bbNms(src, found, detectOpt.isPostPro);
 	}
+	delete[] pFtrForDetect;
 }
 
 //MULTI CLASSIFIER
+void detectMultiClassifier(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
+	if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
+		if (src.rows > src.cols)
+			cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R*1.0f / src.rows*src.cols), MAX_IN_IMG_R));
+		else
+			cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C*1.0f / src.cols*src.rows)));
+		std::cout <<"image is resized," <<"size: " << src.rows << " x " << src.cols << std::endl;
+	}
+	assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
 
-void detectMultiClassifier(Mat &src, int imgR, int imgC,
-	int winR, int winC, int winStrideR, int winStrideC, float scale){
+	int imgR = src.rows;
+	int imgC = src.cols;
+	int winR = detectOpt.winR;
+	int winC = detectOpt.winC;
+	int winStrideR = detectOpt.winStrideR;
+	int winStrideC = detectOpt.winStrideC;
+	float scale = detectOpt.scale;
 
-	static float chnFtrForDetect[MAX_CHN_FTR_DIM] = {.0f};
+	int maxFtrDim = getFtrDim(MAX_IN_IMG_R, MAX_IN_IMG_C);
+	float *pFtrForDetect = new float[maxFtrDim];
 
-	static UInt8 pImg[MAX_IN_IMG_SIZE];
-	Mat2ImgPointer(src, pImg);
-
-	double duration_all = static_cast<double>(getTickCount());
-
-	double duration_intHist = static_cast<double>(getTickCount());
-
-	constructFeatureIntHist(pImg, imgR, imgC);
-
-	duration_intHist = static_cast<double>(getTickCount()) - duration_intHist;
-	printf("construct intHist duration time: %fms\n", 1000.0 * duration_intHist / getTickFrequency());
-
-
-	double duration_compFtr = static_cast<double>(getTickCount());
+	Mat srcGray;
+	if (src.channels() > 1) cv::cvtColor(src, srcGray, CV_BGR2GRAY);
+	else srcGray = src;
+	constructFtrIntHist(srcGray);
 
 	int trueWinCount = 0, totalWinCount = 0, zi = 0;
-	vector<Rect> found;
+	vector<Bbox> bb;  //vector<float> fScore;
 	int computedWinCount = 0;
 
 	const int SCALE_NUM = 5;
 	const float SCALE[SCALE_NUM] = { 0.5, 0.75, 1, 1.25, 1.5 };
 
 	for (zi = 1; zi < SCALE_NUM; zi++){
-
 		float ratio = SCALE[zi];     //float ratio = pow(scale, (float)zi);
 		int newWinR = winR*ratio;
 		int newWinC = winC*ratio;
-		int newWinStepR = winStrideR * ratio;//TODO float newWinStepR
+		int newWinStepR = winStrideR * ratio;
 		int newWinStepC = winStrideC * ratio;
-		//if (newWinStepR < 8) newWinStepR = 8;
-		//if (newWinStepC < 8) newWinStepC = 8;
 
-		int chnFtrDim = (newWinR / SHRINK)*(newWinC / SHRINK) +
-			            (newWinR / SHRINK)*(newWinC / SHRINK) +
-						(newWinR / BIN_SIZE)*(newWinC / BIN_SIZE)*NUM_ORIENT;
 		int startR = 0;
 		while (startR + newWinR <= imgR){
 			int startC = 0;
 			while (startC + newWinC <= imgC){
-
 				totalWinCount++;
 
-				bool likely = false;
-				likely = judgeCandidate(startR, startC, newWinR, newWinC);
+				bool likely = true;
+				if (detectOpt.isUseDp) { likely = judgeCandidate(startR, startC, newWinR, newWinC); }
 				if (likely){
 					computedWinCount++;
 					rect r = { startC, startR, newWinC, newWinR };
-					computeChnFtr(pImg, imgR, imgC, r, chnFtrForDetect, chnFtrDim);
-					float score = .0f; adaboostPredict(chnFtrForDetect, 1, chnFtrDim, &score, zi);
-					//float score = adaboostPredict3(chnFtrForDetect, chnFtrDim, zi);
-					if (score > 0) { Rect r(startC, startR, newWinC, newWinR); found.push_back(r); trueWinCount++; }
+					int ftrDim = getFtrDim(newWinR, newWinC);
+					computeFtr(imgR, imgC, r, pFtrForDetect, ftrDim);
+
+					float score = .0f; adaPredictPerson(pFtrForDetect, 1, ftrDim, &score, zi);
+					//float score = adaPredictPersonEarlyExit(pFtrForDetect, ftrDim, zi);
+					if (score > 0) {
+						trueWinCount++;
+						Rect rec(startC, startR, newWinC, newWinR);
+						ObjectType obType = CAR;
+						Bbox bbTmp = { rec, score, obType };
+						bb.push_back(bbTmp);
+					}
 				}
 				startC += newWinStepC;
 			}
 			startR += newWinStepR;
 		}
 	}
-	duration_compFtr = static_cast<double>(getTickCount()) - duration_compFtr;
-	printf("compute ftr duration time: %fms\n", 1000.0 * duration_compFtr / getTickFrequency());
-
-	duration_all = static_cast<double>(getTickCount()) - duration_all;
-	printf("detect total duration time: %fms\n", 1000.0 * duration_all / getTickFrequency());
-
-	printf("totalWinCount: %d\n", totalWinCount); 
+	printf("totalWinCount: %d\n", totalWinCount);
 	printf("computedWinCount: %d\n", computedWinCount);
-	printf("trueWinCount: %d\n", trueWinCount);	
+	printf("trueWinCount: %d\n", trueWinCount);
 
-	if (trueWinCount > 0)  circlePerson(src, found, false); // postProcessing and circle persons
-
-	
-
+	if (trueWinCount > 0){
+		bbNmsMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
+		//bbNmsMax(src, found, fScore, detectOpt.isPostPro);	
+	}
+	delete[] pFtrForDetect;
 }
