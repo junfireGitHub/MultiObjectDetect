@@ -237,6 +237,17 @@ void constructFtrIntHist(const cv::Mat& src){
 }
 
 
+//void filter(UInt8 *pImg, int imgR, int imgC){
+//	int i = 0, j = 0;
+//	for (j = 0; j < imgR; ++j){
+//		for (i = 1; i < imgC - 1; ++i){
+//			int pos = j*imgC + i;
+//			pImg[pos] = (pImg[pos - 1] + pImg[pos] * 2 + pImg[pos + 1]) >> 2;
+//		}
+//	}
+//}
+
+
 
 
 
