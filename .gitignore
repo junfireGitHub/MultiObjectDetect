@@ -20,6 +20,14 @@
 *.lai
 *.la
 *.a
+
+# add by wedgen
+*.txt
+*.jpg
+*.png
+Debug
+*.vcxproj
+*.filters
 *.lib
 
 # Executables
