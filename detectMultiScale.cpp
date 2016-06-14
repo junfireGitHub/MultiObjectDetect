@@ -21,16 +21,92 @@ static inline int getZoomNum(int imgR, int imgC, int winR, int winC, float scale
 	return zoomNum > 0 ? zoomNum : 0;
 }
 
+vector<Bbox> bb;
+
+void detect(Mat& src, DetectOpt detectOpt[]){
+
+	bb.clear();
+	//road
+	std::cout << "detect road" << std::endl;
+	detectRoad(src, src.rows, src.cols,
+		detectOpt[0].winR, detectOpt[0].winC, detectOpt[0].winStrideR, detectOpt[0].winStrideC);
+	std::cout << std::endl;
+
+	//car and bm
+	std::cout << "detect car and bm" << std::endl;
+	detectMultiScale(src, src.rows, src.cols, detectOpt[1]);
+	std::cout << std::endl;
+
+	//person
+	std::cout << "detect person" << std::endl;
+	detectMultiClassifier(src, src.rows, src.cols, detectOpt[2]);
+	std::cout << std::endl;
+
+	bbNmsMultiClass(src, bb, true);
+}
+
+void detectRoad(Mat &src, int imgR, int imgC,
+	int winR, int winC, int winStrideR, int winStrideC)
+{
+	int ftrDim = getFtrDim(winR, winC);
+	float *chnFtrForDetect = new float[ftrDim];
+
+	int trueCount = 0; int totalWinCount = 0;
+	vector<Rect> found;
+
+	int chnFtrDim = (winR / SHRINK)*(winC / SHRINK) +
+		(winR / SHRINK)*(winC / SHRINK) +
+		(winR / BIN_SIZE)*(winC / BIN_SIZE)*NUM_ORIENT;
+
+	Mat srcGray;
+	if (src.channels() > 1) cv::cvtColor(src, srcGray, CV_BGR2GRAY);
+	else srcGray = src;
+	constructFtrIntHist(srcGray);
+
+	int pixelXOffset = imgC % winC;
+	int pixelYOffset = imgR % winR;
+	int numXOffset = 0;
+	int numYOffset = 2;
+
+	int winStepNumR = (imgR - winR) / winStrideR + 1; //tip£ºint div int is int
+	int winStepNumC = (imgC - winC) / winStrideC + 1;
+
+	int wr = 0, wc = 0;
+	for (wr = numYOffset; wr < winStepNumR; wr++){
+		int startR = wr*winStrideR + pixelYOffset;
+		for (wc = numXOffset; wc < winStepNumC; wc++){
+			int startC = wc*winStrideC + pixelXOffset;
+
+			rect r = { startC, startR, winC, winR };
+			computeFtr(imgR, imgC, r, chnFtrForDetect, chnFtrDim);
+			//float score = .0f; adaboostPredictRoad(chnFtrForDetect, 1, chnFtrDim, &score);
+			float score = adaboostPredictRoad2(chnFtrForDetect);
+
+			if (score > 0){
+				Rect rect(startC, startR, winC, winR); found.push_back(rect);
+				Bbox b = { rect, score, ROAD };
+				bb.push_back(b);
+				trueCount++;
+			}
+			totalWinCount++;
+		}
+	}
+	printf("totalWinCount: %d\n", totalWinCount);
+	printf("trueCount: %d\n", trueCount);
+	delete[] chnFtrForDetect;
+}
+
+
 void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	/*zoom out image if its size is too big*/
-	if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
-		if (src.rows > src.cols)
-			cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R*1.0f / src.rows*src.cols), MAX_IN_IMG_R));
-		else
-			cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C*1.0f / src.cols*src.rows)));
-		std::cout <<"image is resized" <<"size: " << src.rows << " x " << src.cols << std::endl;
-	}
-	assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
+	//if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
+	//	if (src.rows > src.cols)
+	//		cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R*1.0f / src.rows*src.cols), MAX_IN_IMG_R));
+	//	else
+	//		cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C*1.0f / src.cols*src.rows)));
+	//	std::cout <<"image is resized" <<"size: " << src.rows << " x " << src.cols << std::endl;
+	//}
+	//assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
 
 	int imgR = src.rows;
 	int imgC = src.cols;
@@ -49,7 +125,7 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	int afterZoomR, afterZoomC;
 
 	int trueWinCount = 0; int totalWinCount = 0;
-	vector<Bbox> bb;
+	//vector<Bbox> bb;
 	vector<Rect> found;
 	vector<float> fScore;
 	//zoomNum = 0;//CHANGED
@@ -79,10 +155,8 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 				float bmScore =  adaboostPredictBm(pFtrForDetect);
 				ObjectType obj = carScore > bmScore ? CAR : BM;
 				float score = carScore > bmScore ? carScore : bmScore;
-				//ObjectType obj = BM;
-				//float score = bmScore;
-				if (score <= 0) continue;
 
+				if (score <= 0) continue;
 				int x = 0, y = 0, width = 0, height = 0;
 				y = (startR + 0.5)*imgR / afterZoomR - 0.5;
 				x = (startC + 0.5)*imgC / afterZoomC - 0.5;
@@ -117,24 +191,24 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	printf("totalWinCount: %d\n", totalWinCount);
 	printf("trueWinCount: %d\n", trueWinCount);
 
-	if (trueWinCount > 0){
-		if (detectOpt.isGetHard)  saveHardPics(srcGray, found);
-	    else bbNmsMultiClass(src, bb, detectOpt.isPostPro);
-		//bbNms(src, found, detectOpt.isPostPro);
-	}
+	//if (trueWinCount > 0){
+	//	if (detectOpt.isGetHard)  saveHardPics(srcGray, found);
+	//    else bbNmsMultiClass(src, bb, detectOpt.isPostPro);
+	//	//bbNms(src, found, detectOpt.isPostPro);
+	//}
 	delete[] pFtrForDetect;
 }
 
 //MULTI CLASSIFIER
 void detectMultiClassifier(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
-	if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
-		if (src.rows > src.cols)
-			cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R*1.0f / src.rows*src.cols), MAX_IN_IMG_R));
-		else
-			cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C*1.0f / src.cols*src.rows)));
-		std::cout <<"image is resized," <<"size: " << src.rows << " x " << src.cols << std::endl;
-	}
-	assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
+	//if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
+	//	if (src.rows > src.cols)
+	//		cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R*1.0f / src.rows*src.cols), MAX_IN_IMG_R));
+	//	else
+	//		cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C*1.0f / src.cols*src.rows)));
+	//	std::cout <<"image is resized," <<"size: " << src.rows << " x " << src.cols << std::endl;
+	//}
+	//assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
 
 	int imgR = src.rows;
 	int imgC = src.cols;
@@ -153,7 +227,7 @@ void detectMultiClassifier(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	constructFtrIntHist(srcGray);
 
 	int trueWinCount = 0, totalWinCount = 0, zi = 0;
-	vector<Bbox> bb;  //vector<float> fScore;
+	//vector<Bbox> bb;  //vector<float> fScore;
 	int computedWinCount = 0;
 
 	const int SCALE_NUM = 5;
@@ -185,7 +259,7 @@ void detectMultiClassifier(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 					if (score > 0) {
 						trueWinCount++;
 						Rect rec(startC, startR, newWinC, newWinR);
-						ObjectType obType = CAR;
+						ObjectType obType = PERSON;
 						Bbox bbTmp = { rec, score, obType };
 						bb.push_back(bbTmp);
 					}
@@ -199,9 +273,9 @@ void detectMultiClassifier(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	printf("computedWinCount: %d\n", computedWinCount);
 	printf("trueWinCount: %d\n", trueWinCount);
 
-	if (trueWinCount > 0){
-		bbNmsMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
-		//bbNmsMax(src, found, fScore, detectOpt.isPostPro);	
-	}
+	//if (trueWinCount > 0){
+	//	bbNmsMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
+	//	//bbNmsMax(src, found, fScore, detectOpt.isPostPro);	
+	//}
 	delete[] pFtrForDetect;
 }

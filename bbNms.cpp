@@ -12,16 +12,17 @@ void bbNmsMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 		for (int i = 0; i < bb.size(); i++){
 			Rect r = bb[i].pos;
 			switch (bb[i].obType){
-			case CAR:    rectangle(src, r, Scalar(0, 255, 0), 1); break;//green
-			case BM:   rectangle(src, r, Scalar(0, 0, 255), 1); break;//red
+			//case CAR:    rectangle(src, r, Scalar(0, 255, 0), 1); break;//green
+			//case BM:   rectangle(src, r, Scalar(0, 0, 255), 1); break;//red
+			case PERSON: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
 			//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
-			case ROAD:   rectangle(src, r, Scalar(0, 255, 255), 1); break;//gray
+			//case ROAD:   rectangle(src, r, Scalar(0, 255, 255), 1); break;//gray
 			}
 		}
 	}
 	else{
-		const int NUM_OBJ = 3;
-		ObjectType obType[NUM_OBJ] = { CAR, BM, ROAD };
+		const int NUM_OBJ = 4;
+		ObjectType obType[NUM_OBJ] = { CAR, BM, ROAD, PERSON };
 		for (int i = 0; i < NUM_OBJ; i++){
 			vector<Rect> found;
 			found.clear();
@@ -34,8 +35,9 @@ void bbNmsMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 				for (int k = 0; k < foundFiltered.size(); k++){
 					Rect r = foundFiltered[k];
 					switch (obType[i]){
-					case CAR:    rectangle(src, r, Scalar(0, 255, 0), 1); break;
-					case BM:   rectangle(src, r, Scalar(0, 0, 255), 1); break;
+					case CAR:    rectangle(src, r, Scalar(0, 255, 0), 2); break;//green
+					case BM:     rectangle(src, r, Scalar(0, 0, 255), 2); break;//red
+					case PERSON: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
 					//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;
 					//case ROAD:   rectangle(src, r, Scalar(128, 128, 128), 1); break;
 					}
@@ -44,7 +46,7 @@ void bbNmsMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 			else{//ROAD,no postprocessing
 				for (int j = 0; j < bb.size(); j++){
 					if (bb[j].obType == ROAD)
-						rectangle(src, bb[j].pos, Scalar(0, 255, 255), 1);
+						rectangle(src, bb[j].pos, Scalar(0, 255, 255), 1);//gray
 				}
 			}
 		}

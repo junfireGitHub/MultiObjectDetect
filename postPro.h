@@ -4,7 +4,7 @@
 #include"myCLib.h"
 
 typedef enum ObjectType{
-	 CAR, BM, ROAD
+	 CAR, BM, ROAD, PERSON
 }ObjectType; 
 
 typedef struct Bbox{

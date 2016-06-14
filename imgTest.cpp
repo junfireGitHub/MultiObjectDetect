@@ -51,16 +51,16 @@ void imgTestDp(){ /*加入视差后在图片上进行检测*/
 
 void imgTest(){/*在图片上进行检测*/
 	string testPicsPath, testPicsFilePath;
-	testPicsPath = "D:\\MyProject\\MultiObjectDetect - v3.5\\testFromOurVideo\\";
-	testPicsFilePath = testPicsPath + "test.txt";
+	//testPicsPath = "D:\\MyProject\\MultiObjectDetect-v3.5\\testFromOurVideo\\";
+	//testPicsFilePath = testPicsPath + "test.txt";
 	//testPicsPath = "D:\\MyProject\\MultiObjectDetect - v3.5\\testPics\\";
 	//testPicsFilePath = testPicsPath + "test.txt";
 
 	//testPicsPath = "D:\\MyProject\\MultiObjectDetect - v3.5\\bike_test\\";
     //testPicsFilePath = testPicsPath + "test.txt";
 
-	//testPicsPath = "D:\\testPics\\FileRecv\\";
-	//testPicsFilePath = testPicsPath + "test.txt";
+	testPicsPath = "D:\\testPics\\FileRecv\\";
+	testPicsFilePath = testPicsPath + "test.txt";
 	//testPicsPath = "D:\\testPics\\my_video_pics\\";
 	//testPicsFilePath = testPicsPath + "my_video_test.txt";
 	//testPicsPath = "D:\\testPics\\INRIA_pos_huge_test\\";
@@ -73,13 +73,20 @@ void imgTest(){/*在图片上进行检测*/
 		cout << "testing:  " << imgName << endl;
 		imgName = testPicsPath + imgName;
 		src = imread(imgName); assert(src.data != NULL);
-		resize(src, src, Size(320, 240));
+		//resize(src, src, Size(320, 240));
 		cout << "size: " << src.rows << " x " << src.cols << endl;
 		
 		double duration_detect = static_cast<double>(getTickCount());
 
-		DetectOpt detectOpt = {96, 128, 8, 8, 1.2, false/*isUseDp*/, false/*isPostPro*/, false/*isGetHard*/};
-		detectMultiScale(src, src.rows, src.cols, detectOpt);
+		//DetectOpt detectOpt = {96, 128, 8, 8, 1.2, false/*isUseDp*/, false/*isPostPro*/, false/*isGetHard*/};
+		//detectMultiScale(src, src.rows, src.cols, detectOpt);
+
+		const int ROAD = 0, CAR_BM = 1, PERSON = 2;
+		DetectOpt detectOpt[3];
+		detectOpt[ROAD] = { 32, 32, 32, 32, 1.2, false, false, false };
+		detectOpt[CAR_BM] = { 96, 128, 8, 8, 1.2, false, false, false };
+		detectOpt[PERSON] = { 128, 64, 8, 8, 1.2, false, false, false };
+		detect(src, detectOpt);
 
 		duration_detect = static_cast<double>(getTickCount()) - duration_detect;
 		printf("detect duration time(not accurate): %fms\n", 1000.0 * duration_detect / getTickFrequency());

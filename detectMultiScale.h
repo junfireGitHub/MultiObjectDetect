@@ -15,6 +15,10 @@ typedef struct DetectOpt{
 	bool isGetHard;
 }DetectOpt;
 
+void detect(Mat& src, DetectOpt detectOpt[]);
+void detectRoad(Mat &src, int imgR, int imgC,
+	int winR, int winC, int winStrideR, int winStrideC);
+
 void detectMultiScale(Mat &src, int imgR, int imgC, DetectOpt detectOpt);
 void detectMultiClassifier(Mat &src, int imgR, int imgC, DetectOpt detectOpt);
 

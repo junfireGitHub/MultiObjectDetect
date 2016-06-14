@@ -9,5 +9,6 @@ void adaPredictBm(const float *data, int num, int dimension, float *result);
 
 float adaboostPredictCar(const float *data);
 float adaboostPredictBm(const float *data);
+float adaboostPredictRoad2(const float *data);
 
 #endif
