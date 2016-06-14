@@ -24,15 +24,16 @@ static inline int getZoomNum(int imgR, int imgC, int winR, int winC, float scale
 vector<Bbox> bb;
 
 void detect(Mat& src, DetectOpt detectOpt[]){
-
+	//init
 	bb.clear();
+
 	//road
 	std::cout << "detect road" << std::endl;
 	detectRoad(src, src.rows, src.cols,
 		detectOpt[0].winR, detectOpt[0].winC, detectOpt[0].winStrideR, detectOpt[0].winStrideC);
 	std::cout << std::endl;
 
-	//car and bm
+	//car and bike&elecBike
 	std::cout << "detect car and bm" << std::endl;
 	detectMultiScale(src, src.rows, src.cols, detectOpt[1]);
 	std::cout << std::endl;
@@ -42,6 +43,7 @@ void detect(Mat& src, DetectOpt detectOpt[]){
 	detectMultiClassifier(src, src.rows, src.cols, detectOpt[2]);
 	std::cout << std::endl;
 
+	//postprocessing
 	bbNmsMultiClass(src, bb, true);
 }
 
@@ -52,11 +54,9 @@ void detectRoad(Mat &src, int imgR, int imgC,
 	float *chnFtrForDetect = new float[ftrDim];
 
 	int trueCount = 0; int totalWinCount = 0;
-	vector<Rect> found;
+	//vector<Rect> found;
 
-	int chnFtrDim = (winR / SHRINK)*(winC / SHRINK) +
-		(winR / SHRINK)*(winC / SHRINK) +
-		(winR / BIN_SIZE)*(winC / BIN_SIZE)*NUM_ORIENT;
+	int chnFtrDim = getFtrDim(winR, winC);;
 
 	Mat srcGray;
 	if (src.channels() > 1) cv::cvtColor(src, srcGray, CV_BGR2GRAY);
@@ -83,7 +83,7 @@ void detectRoad(Mat &src, int imgR, int imgC,
 			float score = adaboostPredictRoad2(chnFtrForDetect);
 
 			if (score > 0){
-				Rect rect(startC, startR, winC, winR); found.push_back(rect);
+				Rect rect(startC, startR, winC, winR); //found.push_back(rect);
 				Bbox b = { rect, score, ROAD };
 				bb.push_back(b);
 				trueCount++;
@@ -126,8 +126,8 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 
 	int trueWinCount = 0; int totalWinCount = 0;
 	//vector<Bbox> bb;
-	vector<Rect> found;
-	vector<float> fScore;
+	//vector<Rect> found;
+	//vector<float> fScore;
 	//zoomNum = 0;//CHANGED
 	for (int zi = 0; zi <= zoomNum; zi++){
 		float ratio = pow(scale, (float)zi);
@@ -162,7 +162,7 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 				x = (startC + 0.5)*imgC / afterZoomC - 0.5;
 				height = winR*ratio;  width = winC*ratio;
 				Rect r(x, y, width, height); 
-				found.push_back(r); fScore.push_back(score);
+				//found.push_back(r); fScore.push_back(score);
 				Bbox b = { r, score, obj };
 				bb.push_back(b);
 				trueWinCount++;		 		
@@ -254,8 +254,8 @@ void detectMultiClassifier(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 					int ftrDim = getFtrDim(newWinR, newWinC);
 					computeFtr(imgR, imgC, r, pFtrForDetect, ftrDim);
 
-					float score = .0f; adaPredictPerson(pFtrForDetect, 1, ftrDim, &score, zi);
-					//float score = adaPredictPersonEarlyExit(pFtrForDetect, ftrDim, zi);
+					//float score = .0f; adaPredictPerson(pFtrForDetect, 1, ftrDim, &score, zi);
+					float score = adaPredictPersonEarlyExit(pFtrForDetect, ftrDim, zi);
 					if (score > 0) {
 						trueWinCount++;
 						Rect rec(startC, startR, newWinC, newWinR);
