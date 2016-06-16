@@ -2,12 +2,14 @@
 #include"constructFtrIntHist.h"
 #include"opencvLib.h"
 
-float grayImgShrink[(MAX_IN_IMG_R / SHRINK)* (MAX_IN_IMG_C / SHRINK)] = { .0f };
+float yShrink[(MAX_IN_IMG_R / SHRINK)* (MAX_IN_IMG_C / SHRINK)] = { .0f };
+float uShrink[(MAX_IN_IMG_R / SHRINK)* (MAX_IN_IMG_C / SHRINK)] = { .0f };
+float vShrink[(MAX_IN_IMG_R / SHRINK)* (MAX_IN_IMG_C / SHRINK)] = { .0f };
 float gradMagShrink[(MAX_IN_IMG_R / SHRINK)* (MAX_IN_IMG_C / SHRINK)] = { .0f };
 float gradHistShrink[(MAX_IN_IMG_R / BIN_SIZE)*(MAX_IN_IMG_C / BIN_SIZE)][NUM_ORIENT] = { .0f };
 
 static double gradHistIntArr[MAX_IN_IMG_R + 1][MAX_IN_IMG_C + 1][NUM_ORIENT] = { .0f };
-static double grayIntHist[MAX_IN_IMG_R + 1][MAX_IN_IMG_C + 1] = { .0f };
+static double colorIntHist[MAX_IN_IMG_R + 1][MAX_IN_IMG_C + 1] = { .0f };
 static double gradMagIntHist[MAX_IN_IMG_R + 1][MAX_IN_IMG_C + 1] = { .0f };
 static float gradMag[MAX_IN_IMG_SIZE] = { .0f };
 static float gradOri[MAX_IN_IMG_SIZE] = { .0f };
@@ -167,13 +169,13 @@ static void constructGradMagIntHist(const float *pChn, int row, int col){
 static void constructColorIntHist(const UInt8 *pChn, int row, int col){
 
 	int i = 0, j = 0;
-	memset(grayIntHist, 0, sizeof(grayIntHist));
+	memset(colorIntHist, 0, sizeof(colorIntHist));
 	//each row accumulation
 	int pos = 0;
 	for (j = 0 + 1; j < row + 1; j++){
 		for (i = 1; i < col + 1; i++){
 
-			grayIntHist[j][i] = pChn[pos + i - 1] + grayIntHist[j][i - 1];
+			colorIntHist[j][i] = pChn[pos + i - 1] + colorIntHist[j][i - 1];
 		}
 		pos += col;
 	}
@@ -182,7 +184,7 @@ static void constructColorIntHist(const UInt8 *pChn, int row, int col){
 	for (i = 0 + 1; i < col + 1; i++){
 		for (j = 1 + 1; j < row + 1; j++){
 
-			grayIntHist[j][i] += grayIntHist[j - 1][i];
+			colorIntHist[j][i] += colorIntHist[j - 1][i];
 
 		}
 	}
@@ -206,35 +208,25 @@ static void computeChnShrink(double intHist[][MAX_IN_IMG_C + 1], int srcR, int s
 }
 
 //ACF 
-void constructFtrIntHist(const cv::Mat& src){
-	//cv::Mat src = mat.clone();
-	//if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
-	//	if (src.rows > src.cols)
-	//		cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R / src.rows*src.cols), MAX_IN_IMG_R));
-	//	else
-	//		cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C/src.cols*src.rows)));
-	//}
-	//assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
-
-	int srcR = src.rows;
-	int srcC = src.cols;
-	unsigned char *pSrc = new unsigned char[srcR*srcC];
-	Mat2ImgPointer(src, pSrc);
-
-	computeGradient(pSrc, srcR, srcC, gradMag, gradOri);
-
-	constructGradHistIntHist(gradOri, gradMag, srcR, srcC);
-	computeGradHistShrink(srcR, srcC, BIN_SIZE, gradHistShrink);
-
-	constructGradMagIntHist(gradMag, srcR, srcC);
-	computeChnShrink(gradMagIntHist, srcR, srcC, SHRINK, gradMagShrink);
-
-	constructColorIntHist(pSrc, srcR, srcC);
-	computeChnShrink(grayIntHist, srcR, srcC, SHRINK, grayImgShrink);
-
-	delete[] pSrc;
-}
-
+//void constructFtrIntHist(const cv::Mat& src){
+//	int srcR = src.rows;
+//	int srcC = src.cols;
+//	unsigned char *pSrc = new unsigned char[srcR*srcC];
+//	Mat2ImgPointer(src, pSrc);
+//
+//	computeGradient(pSrc, srcR, srcC, gradMag, gradOri);
+//
+//	constructGradHistIntHist(gradOri, gradMag, srcR, srcC);
+//	computeGradHistShrink(srcR, srcC, BIN_SIZE, gradHistShrink);
+//
+//	constructGradMagIntHist(gradMag, srcR, srcC);
+//	computeChnShrink(gradMagIntHist, srcR, srcC, SHRINK, gradMagShrink);
+//
+//	constructColorIntHist(pSrc, srcR, srcC);
+//	computeChnShrink(colorIntHist, srcR, srcC, SHRINK, grayImgShrink);
+//
+//	delete[] pSrc;
+//}
 //void filter(UInt8 *pImg, int imgR, int imgC){
 //	int i = 0, j = 0;
 //	for (j = 0; j < imgR; ++j){
@@ -244,7 +236,6 @@ void constructFtrIntHist(const cv::Mat& src){
 //		}
 //	}
 //}
-
 //void fastFilter(UInt8 *pImg, int imgR, int imgC){
 // /* if use this function, the boundary pixel can't be used, because its value is incorrect */
 //	int i = 0;
@@ -253,33 +244,56 @@ void constructFtrIntHist(const cv::Mat& src){
 //	}
 //}
 
-//change gray channel to rgb channel
-//rChnShrink , gChnShrink , bChnShrink
-//extractRgbChn
-//computeRChnShrink
-//computeGChnShrink
-//computeBChnShrink
-//getRChnShrinkFtr
-//getGChnShrinkFtr
-//getBChnShrinkFtr
+void rgb2yuv(const cv::Mat img, UInt8 * pY, UInt8 * pU, UInt8 * pV)
+{
+    assert(img.channels() == 3);
+	UInt8 R, G, B, Y;
+	int imgH = img.rows;
+	int imgW = img.cols;
+	for (int i = 0; i < imgH; i++)
+	{
+		for (int j = 0; j < imgW; j++)
+		{
+			B = img.at<cv::Vec3b>(i, j)[0];
+			G = img.at<cv::Vec3b>(i, j)[1];
+			R = img.at<cv::Vec3b>(i, j)[2];
+			Y = (UInt8)(0.299*R + 0.587*G + 0.114*B);
+			*(pY + i*imgW + j) = Y;
+			*(pU + i*imgW + j) = (UInt8)(0.564*(B - Y));
+			*(pV + i*imgW + j) = (UInt8)(0.713*(R - Y));
+		}
+	}
+}
 
-//void rgb2yuv(const cv::Mat img, int imgH, int imgW, UInt8 * pY, UInt8 * pU, UInt8 * pV)
-//{
-//	UInt8 R, G, B, Y;
-//	for (int i = 0; i < imgH; i++)
-//	{
-//		for (int j = 0; j < imgW; j++)
-//		{
-//			B = img.at<cv::Vec3b>(i, j)[0];
-//			G = img.at<cv::Vec3b>(i, j)[1];
-//			R = img.at<cv::Vec3b>(i, j)[2];
-//			Y = (UInt8)(0.299*R + 0.587*G + 0.114*B);
-//			*(pY + i*imgW + j) = Y;
-//			*(pU + i*imgW + j) = (UInt8)(0.564*(B - Y));
-//			*(pV + i*imgW + j) = (UInt8)(0.713*(R - Y));
-//		}
-//	}
-//}
+void constructFtrIntHist(const cv::Mat& src){
+	int srcR = src.rows;
+	int srcC = src.cols;
+	unsigned char *pY = new unsigned char[srcR*srcC];
+	unsigned char *pU = new unsigned char[srcR*srcC];
+	unsigned char *pV = new unsigned char[srcR*srcC];
+	rgb2yuv(src, pY, pU, pV);
+
+	computeGradient(pY, srcR, srcC, gradMag, gradOri);
+	//gradhist
+	constructGradHistIntHist(gradOri, gradMag, srcR, srcC);
+	computeGradHistShrink(srcR, srcC, BIN_SIZE, gradHistShrink);
+	
+	//gradmag
+	constructGradMagIntHist(gradMag, srcR, srcC);
+	computeChnShrink(gradMagIntHist, srcR, srcC, SHRINK, gradMagShrink);
+
+	//y,u,v channel
+	constructColorIntHist(pY, srcR, srcC);
+	computeChnShrink(colorIntHist, srcR, srcC, SHRINK, yShrink);
+	constructColorIntHist(pU, srcR, srcC);
+	computeChnShrink(colorIntHist, srcR, srcC, SHRINK, uShrink);
+	constructColorIntHist(pV, srcR, srcC);
+	computeChnShrink(colorIntHist, srcR, srcC, SHRINK, vShrink);
+
+	delete[] pY;
+	delete[] pU;
+	delete[] pV;
+}
 
 
 
