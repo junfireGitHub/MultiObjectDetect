@@ -15,7 +15,6 @@ using namespace std;
 using namespace cv;
 
 int main(){
-
 	cout << "1 : imgTest()" << endl;
 	cout << "2 : imgTestDp()" << endl;
 	cout << "3 : videoTest()" << endl;

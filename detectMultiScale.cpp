@@ -28,23 +28,26 @@ void detect(Mat& src, DetectOpt detectOpt[]){
 	bb.clear();
 
 	//road
-	std::cout << "detect road" << std::endl;
-	detectRoad(src, src.rows, src.cols,
-		detectOpt[0].winR, detectOpt[0].winC, detectOpt[0].winStrideR, detectOpt[0].winStrideC);
-	std::cout << std::endl;
+	//std::cout << "detect road" << std::endl;
+	//detectRoad(src, src.rows, src.cols,
+	//	detectOpt[0].winR, detectOpt[0].winC, detectOpt[0].winStrideR, detectOpt[0].winStrideC);
+	//std::cout << std::endl;
 
-	//car and bike&elecBike
-	std::cout << "detect car and bm" << std::endl;
-	detectMultiScale(src, src.rows, src.cols, detectOpt[1]);
-	std::cout << std::endl;
+	////car and bike&elecBike
+	//std::cout << "detect car and bm" << std::endl;
+	//detectMultiScale(src, src.rows, src.cols, detectOpt[1]);
+	//std::cout << std::endl;
 
 	//person
 	std::cout << "detect person" << std::endl;
 	detectMultiClassifier(src, src.rows, src.cols, detectOpt[2]);
 	std::cout << std::endl;
 
-	//postprocessing
-	bbNmsMultiClass(src, bb, true);
+	//postprocessing	
+	if (bb.size() > 1){
+		bbNmsMultiClass(src, bb, true);
+		//bbNmsMaxMultiClass(src, bb, true);
+	}
 }
 
 void detectRoad(Mat &src, int imgR, int imgC,

@@ -15,6 +15,8 @@ typedef struct Bbox{
 
 void bbNmsMultiClass(cv::Mat& src, cv::vector<Bbox>& bb, bool isPostPro);
 void bbNms(cv::Mat& src, cv::vector<cv::Rect> found, bool isPostPro);
+
+void bbNmsMaxMultiClass(cv::Mat& src, cv::vector<Bbox>& bb, bool isPostPro);
 void bbNmsMax(cv::Mat& src, cv::vector<cv::Rect> found, cv::vector<float> score, bool isPostPro);
 
 #endif

@@ -5,6 +5,54 @@ using namespace cv;
 static inline bool isMerge(Rect r1, Rect r2);
 static vector<Rect> mergeRect(const vector<Rect>& rec, const vector<float> &score);
 
+void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
+	if (!isPostPro){/*no postprocessing, just draw all rectangles*/
+		for (int i = 0; i < bb.size(); i++){
+			Rect r = bb[i].pos;
+			switch (bb[i].obType){
+				//case CAR:    rectangle(src, r, Scalar(0, 255, 0), 1); break;//green
+				//case BM:   rectangle(src, r, Scalar(0, 0, 255), 1); break;//red
+			case PERSON: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
+				//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
+				//case ROAD:   rectangle(src, r, Scalar(0, 255, 255), 1); break;//gray
+			}
+		}
+	}
+	else{
+		const int NUM_OBJ = 4;
+		ObjectType obType[NUM_OBJ] = { CAR, BM, ROAD, PERSON };
+		for (int i = 0; i < NUM_OBJ; i++){
+			vector<Rect> found;
+			vector<float> score;
+			for (int j = 0; j < bb.size(); j++){
+				if (bb[j].obType == obType[i]){
+					found.push_back(bb[j].pos);
+					score.push_back(bb[j].score);
+				}
+			}
+			if (obType[i] != ROAD){
+				vector<Rect> foundFiltered = mergeRect(found, score); //merge rects
+				for (int k = 0; k < foundFiltered.size(); k++){
+					Rect r = foundFiltered[k];
+					switch (obType[i]){
+					case CAR:    rectangle(src, r, Scalar(0, 255, 0), 2); break;//green
+					case BM:     rectangle(src, r, Scalar(0, 0, 255), 2); break;//red
+					case PERSON: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
+						//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;
+						//case ROAD:   rectangle(src, r, Scalar(128, 128, 128), 1); break;
+					}
+				}
+			}
+			else{//ROAD,no postprocessing
+				for (int j = 0; j < bb.size(); j++){
+					if (bb[j].obType == ROAD)
+						rectangle(src, bb[j].pos, Scalar(0, 255, 255), 1);//gray
+				}
+			}
+		}
+	}
+}
+
 void bbNmsMax(Mat& src, vector<Rect> found, vector<float> score, bool isPostPro){
 	if (!isPostPro){/*no postprocessing, just draw all rectangles*/
 		for (int i = 0; i < found.size(); i++){
@@ -25,22 +73,29 @@ void bbNmsMax(Mat& src, vector<Rect> found, vector<float> score, bool isPostPro)
 static vector<Rect> mergeRect(const vector<Rect>& rec, const vector<float> &score){
 	assert(rec.size() == score.size());
 
+	if (rec.size() == 0){
+		vector<Rect> ret;
+		return ret;
+	}
 	vector<Rect> r = rec;
+	vector<int> pc(rec.size(),0);
 
 	for (int i = 0; i < rec.size(); ++i){
 		if (r[i].x == -1) continue;//maxg
 		for (int j = i + 1; j < rec.size(); ++j){
 			if (r[j].x == -1) continue;
 			if (isMerge(rec[i], rec[j])){
-				int pos = score[i]>score[j] ? j : i;
+				int pos = score[i]>=score[j] ? j : i;
 				r[pos].x = -1;
+				pos = score[i]>=score[j] ? i : j;
+				pc[pos]++;
 			}
 		}
 	}
 
 	vector<Rect> ret;
 	for (int i = 0; i < r.size(); ++i){
-		if (r[i].x != -1)
+		if (r[i].x != -1 && pc[i] > 0)
 			ret.push_back(r[i]);
 	}
 	return ret;

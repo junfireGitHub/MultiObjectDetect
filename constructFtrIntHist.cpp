@@ -14,7 +14,6 @@ static float gradOri[MAX_IN_IMG_SIZE] = { .0f };
 
 
 static void computeGradient(const UInt8 *src, int imgR, int imgC, float *pGradMag, float *pOri){
-
 	static float ysub[MAX_IN_IMG_SIZE] = { 0 };
 	static float xsub[MAX_IN_IMG_SIZE] = { 0 };
 
@@ -236,7 +235,6 @@ void constructFtrIntHist(const cv::Mat& src){
 	delete[] pSrc;
 }
 
-
 //void filter(UInt8 *pImg, int imgR, int imgC){
 //	int i = 0, j = 0;
 //	for (j = 0; j < imgR; ++j){
@@ -246,6 +244,45 @@ void constructFtrIntHist(const cv::Mat& src){
 //		}
 //	}
 //}
+
+//void fastFilter(UInt8 *pImg, int imgR, int imgC){
+// /* if use this function, the boundary pixel can't be used, because its value is incorrect */
+//	int i = 0;
+//	for (i = 1; i < imgR*imgC-1; ++i){
+//		pImg[i] = (pImg[i - 1] + pImg[i] + pImg[i] + pImg[i + 1]) >> 2;// [1 2 1]/4
+//	}
+//}
+
+//change gray channel to rgb channel
+//rChnShrink , gChnShrink , bChnShrink
+//extractRgbChn
+//computeRChnShrink
+//computeGChnShrink
+//computeBChnShrink
+//getRChnShrinkFtr
+//getGChnShrinkFtr
+//getBChnShrinkFtr
+
+//void rgb2yuv(const cv::Mat img, int imgH, int imgW, UInt8 * pY, UInt8 * pU, UInt8 * pV)
+//{
+//	UInt8 R, G, B, Y;
+//	for (int i = 0; i < imgH; i++)
+//	{
+//		for (int j = 0; j < imgW; j++)
+//		{
+//			B = img.at<cv::Vec3b>(i, j)[0];
+//			G = img.at<cv::Vec3b>(i, j)[1];
+//			R = img.at<cv::Vec3b>(i, j)[2];
+//			Y = (UInt8)(0.299*R + 0.587*G + 0.114*B);
+//			*(pY + i*imgW + j) = Y;
+//			*(pU + i*imgW + j) = (UInt8)(0.564*(B - Y));
+//			*(pV + i*imgW + j) = (UInt8)(0.713*(R - Y));
+//		}
+//	}
+//}
+
+
+
 
 
 
