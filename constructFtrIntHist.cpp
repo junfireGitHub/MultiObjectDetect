@@ -14,7 +14,6 @@ static double gradMagIntHist[MAX_IN_IMG_R + 1][MAX_IN_IMG_C + 1] = { .0f };
 static float gradMag[MAX_IN_IMG_SIZE] = { .0f };
 static float gradOri[MAX_IN_IMG_SIZE] = { .0f };
 
-
 static void computeGradient(const UInt8 *src, int imgR, int imgC, float *pGradMag, float *pOri){
 	static float ysub[MAX_IN_IMG_SIZE] = { 0 };
 	static float xsub[MAX_IN_IMG_SIZE] = { 0 };
