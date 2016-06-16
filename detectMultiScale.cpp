@@ -45,8 +45,8 @@ void detect(Mat& src, DetectOpt detectOpt[]){
 
 	//postprocessing	
 	if (bb.size() > 1){
-		bbNmsMultiClass(src, bb, true);
-		//bbNmsMaxMultiClass(src, bb, true);
+		//bbNmsMultiClass(src, bb, true);
+		bbNmsMaxMultiClass(src, bb, true);
 	}
 }
 

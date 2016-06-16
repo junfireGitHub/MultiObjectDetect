@@ -95,7 +95,7 @@ static vector<Rect> mergeRect(const vector<Rect>& rec, const vector<float> &scor
 
 	vector<Rect> ret;
 	for (int i = 0; i < r.size(); ++i){
-		if (r[i].x != -1 && pc[i] > 0)
+		if (r[i].x != -1 /*&& (pc[i] > 0 || score[i]>10)*/)
 			ret.push_back(r[i]);
 	}
 	return ret;
