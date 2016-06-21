@@ -51,7 +51,6 @@ static void getGradHistFeature(const float pSrc[][NUM_ORIENT], int srcC, rect r,
 }
 
 int getFtrDim(int rows, int cols){
-
 	return  (rows / SHRINK)*(cols / SHRINK) +  (rows / SHRINK)*(cols / SHRINK) + 
 			(rows / BIN_SIZE)* (cols / BIN_SIZE)*NUM_ORIENT;
 }

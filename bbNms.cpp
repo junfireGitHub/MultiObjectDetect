@@ -60,25 +60,14 @@ void bbNms(Mat& src, vector<Rect> found, bool isPostPro){
 			rectangle(src, r, Scalar(255), 1);
 		}
 	}else{
-
 		vector<Rect> foundFiltered = mergeRect(found, 2, 0.2);
 		printf("afterPostProCount: %d\n", foundFiltered.size());
 
 		//Mat srcTemp = src.clone();
 		for (int i = 0; i < foundFiltered.size(); i++){
-
 			Rect r = foundFiltered[i];
-
-			//zoom out rectangles, because the rects detected are little bigger than persons in pics
-			//r.x += cvRound(r.width*0.1);
-			//r.width = cvRound(r.width*0.8);
-			//r.y += cvRound(r.height*0.07);
-			//r.height = cvRound(r.height*0.8);
-
 			rectangle(src, r, Scalar(255), 1);
 		}
-		//string winName2 = "processed image"; namedWindow(winName2);
-		//imshow(winName, src); waitKey();
 	}
 }
 

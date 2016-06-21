@@ -37,7 +37,6 @@ void sampleTrain(){
 	ifstream finPos(posTrainTxt); if (!finPos && POS_SAM_NUM > 0){ printf("file finPos is NULL"); system("pause"); exit(1); }
 	ifstream finNeg(negTrainTxt);  if (!finNeg && NEG_SAM_NUM > 0){ printf("file finNegt is NULL"); system("pause"); exit(1); }
 	ifstream finHard(hardTrainTxt); if (!finHard && HARD_SAM_NUM > 0){ printf("file finHard is NULL"); system("pause"); exit(1); }
-	//static unsigned char pImg[TRAIN_IMG_R * TRAIN_IMG_C] = {0};
 	const int TRAIN_CHN_FTR_DIM = getFtrDim(TRAIN_IMG_R, TRAIN_IMG_C);
 	static float *pFtrForTrain = new float[TRAIN_CHN_FTR_DIM];
 
@@ -49,14 +48,12 @@ void sampleTrain(){
 		cout << "Processing£º " << ImgName << endl;
 		ImgName = posTrainPath + ImgName;
 		Mat src = imread(ImgName, 0); assert(src.data != NULL);
-		//src = src(Rect(16, 16, 64, 128));
-		if (src.rows != TRAIN_IMG_R || src.cols != TRAIN_IMG_C)
+		if (src.rows != TRAIN_IMG_R || src.cols != TRAIN_IMG_C){
 			resize(src, src, Size(TRAIN_IMG_C, TRAIN_IMG_R));//TODO
+			cout << "resized" << endl;
+		}
 		assert(src.rows == TRAIN_IMG_R && src.cols == TRAIN_IMG_C);
-		//assert(src.rows*src.cols == sizeof(pImg) / sizeof(pImg[0]));
 
-		//Mat2ImgPointer(src, pImg);
-		//constructFtrIntHist(pImg, TRAIN_IMG_R, TRAIN_IMG_C);
 		constructFtrIntHist(src);
 		rect r = { 0, 0, TRAIN_IMG_C, TRAIN_IMG_R };
 		computeFtr(TRAIN_IMG_R, TRAIN_IMG_C, r, pFtrForTrain, TRAIN_CHN_FTR_DIM);
@@ -69,19 +66,17 @@ void sampleTrain(){
 		cout << "Processing£º " << ImgName << endl;
 		ImgName = negTrainPath + ImgName;
 		Mat src = imread(ImgName, 0); assert(src.data != NULL);
-		if (src.rows != TRAIN_IMG_R || src.cols != TRAIN_IMG_C)
+		if (src.rows != TRAIN_IMG_R || src.cols != TRAIN_IMG_C){
 			resize(src, src, Size(TRAIN_IMG_C, TRAIN_IMG_R));//TODO
+			cout << "resized" << endl;
+		}
 		assert(src.rows == TRAIN_IMG_R&&src.cols == TRAIN_IMG_C);
-        //assert(src.rows*src.cols == sizeof(pImg) / sizeof(pImg[0]));
 
-		//Mat2ImgPointer(src, pImg);
-		//constructFtrIntHist(pImg, TRAIN_IMG_R, TRAIN_IMG_C);
 		constructFtrIntHist(src);
 		rect r = { 0, 0, TRAIN_IMG_C, TRAIN_IMG_R };
 		computeFtr(TRAIN_IMG_R, TRAIN_IMG_C, r, pFtrForTrain, TRAIN_CHN_FTR_DIM);
 
 		appendAdaboostData2File(ftrNegFileName, pFtrForTrain, TRAIN_CHN_FTR_DIM, 1);
-
 	}
 
 	//HARD
@@ -89,14 +84,13 @@ void sampleTrain(){
 		cout << "Processing£º " << ImgName << endl;
 		ImgName = hardTrainPath + ImgName;
 		Mat src = imread(ImgName, 0); assert(src.data != NULL);
-		if (src.rows != TRAIN_IMG_R || src.cols != TRAIN_IMG_C)
+		if (src.rows != TRAIN_IMG_R || src.cols != TRAIN_IMG_C){
 			resize(src, src, Size(TRAIN_IMG_C, TRAIN_IMG_R));//TODO
+			cout << "resized" << endl;
+		}
 		assert(src.rows == TRAIN_IMG_R&&src.cols == TRAIN_IMG_C);
-        //assert(src.rows*src.cols == sizeof(pImg) / sizeof(pImg[0]));
 
-		//Mat2ImgPointer(src, pImg);
 		constructFtrIntHist(src);
-		//constructFtrIntHist(pImg, TRAIN_IMG_R, TRAIN_IMG_C);
 		rect r = { 0, 0, TRAIN_IMG_C, TRAIN_IMG_R };
 		computeFtr(TRAIN_IMG_R, TRAIN_IMG_C, r, pFtrForTrain, TRAIN_CHN_FTR_DIM);
 

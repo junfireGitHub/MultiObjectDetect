@@ -244,7 +244,6 @@ void constructFtrIntHist(const cv::Mat& src){
 //		}
 //	}
 //}
-
 //void fastFilter(UInt8 *pImg, int imgR, int imgC){
 // /* if use this function, the boundary pixel can't be used, because its value is incorrect */
 //	int i = 0;
@@ -252,7 +251,6 @@ void constructFtrIntHist(const cv::Mat& src){
 //		pImg[i] = (pImg[i - 1] + pImg[i] + pImg[i] + pImg[i + 1]) >> 2;// [1 2 1]/4
 //	}
 //}
-
 //change gray channel to rgb channel
 //rChnShrink , gChnShrink , bChnShrink
 //extractRgbChn
@@ -262,7 +260,6 @@ void constructFtrIntHist(const cv::Mat& src){
 //getRChnShrinkFtr
 //getGChnShrinkFtr
 //getBChnShrinkFtr
-
 //void rgb2yuv(const cv::Mat img, int imgH, int imgW, UInt8 * pY, UInt8 * pU, UInt8 * pV)
 //{
 //	UInt8 R, G, B, Y;
