@@ -26,7 +26,6 @@ void getHardFromNeg(){
 	ifstream fileNeg(negForHardNameTxt); 
 	if (!fileNeg) { cout<<"fileNeg don't exist,potion:getHardFromNeg"<<endl; system("pause"); exit(1); }
 	string imgName;
-//	unsigned char *pImg;
 	for (int num = 0; getline(fileNeg, imgName); num++){
 		cout << "Processing£º " << imgName << endl;
 		imgName = negForHardPath + imgName;

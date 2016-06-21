@@ -207,7 +207,6 @@ static void computeChnShrink(double intHist[][MAX_IN_IMG_C + 1], int srcR, int s
 
 //ACF 
 void constructFtrIntHist(const cv::Mat& src){
-
 	assert(src.channels() == 1);
 	int srcR = src.rows;
 	int srcC = src.cols;

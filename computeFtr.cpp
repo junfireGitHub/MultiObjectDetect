@@ -9,7 +9,6 @@ void getColorFeature(const float *src, int srcC, rect r, float *pColorFtr){
 	int ks = r.y*srcC + r.x;
 
 	for (j = 0; j <= r.height - 1; ++j){
-
 		memcpy(pColorFtr + kd, src + ks, sizeof(src[0])*r.width);
 		kd += r.width;
 		ks += srcC;
@@ -23,7 +22,6 @@ void getGradMagFeature(const float *pMag, int srcC, rect r, float *pMagFtr){
 	int ks = r.y*srcC + r.x;
 
 	for (j = 0; j <= r.height - 1; ++j){
-
 		memcpy(pMagFtr + kd, pMag + ks, sizeof(pMag[0])*r.width);
 		kd += r.width;
 		ks += srcC;
@@ -38,12 +36,10 @@ static void getGradHistFeature(const float pSrc[][NUM_ORIENT], int srcC, rect r,
 	const int KD_PLUS = r.width*NUM_ORIENT;
 
 	for (j = 0; j <= r.height - 1; ++j){
-
 		memcpy(pFtr + kd, &pSrc[ks][0], sizeof(pFtr[0])*KD_PLUS);
 		kd += KD_PLUS;
 		ks += srcC;
 	}
-
 }
 
 int getFtrDim(int rows, int cols){

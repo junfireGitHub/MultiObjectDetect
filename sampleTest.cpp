@@ -52,7 +52,7 @@ void sampleTest(){
 		computeFtr(TEST_IMG_R, TEST_IMG_C, r, pFtrForTest, TEST_CHN_FTR_DIM);
 
 		float score = 0;
-		adaPredictPerson(pFtrForTest, 1, TEST_CHN_FTR_DIM, &score,0);
+		//adaPredictPerson(pFtrForTest, 1, TEST_CHN_FTR_DIM, &score,0);
 		if (score < 0) fnCount++;
 
 	}
@@ -76,7 +76,7 @@ void sampleTest(){
 		computeFtr(TEST_IMG_R, TEST_IMG_C, r, pFtrForTest, TEST_CHN_FTR_DIM);
 
 		float score = 0;
-		adaPredictPerson(pFtrForTest, 1, TEST_CHN_FTR_DIM, &score,0);
+		//adaPredictPerson(pFtrForTest, 1, TEST_CHN_FTR_DIM, &score,0);
 		if (score > 0) fpCount++;
 	}
 	delete[] pFtrForTest;

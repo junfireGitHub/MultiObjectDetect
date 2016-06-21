@@ -9,21 +9,21 @@
 
 void detect(Mat &img, Mat &out){
 	// Convert to gray
-	//Mat img2(img, Rect(0, 0, img.cols, img.rows));
-	//cv::cvtColor(img2, out, CV_BGR2GRAY);
-	//resize(out, out, Size(out.cols / 1.5, out.rows / 1.5));
-	//DetectOpt detectOpt = { 128, 64, 8, 8, 1.2, false/*isUseDp*/, true/*isPostPro*/, false/*isGetHard*/ };
-	//detectOpt.isUseDp = false; 
-	//detectOpt.isGetHard = false;
-	////detectMultiClassifier(out, out.rows, out.cols, detectOpt);
-	//detectMultiScale(out, out.rows, out.cols, detectOpt);
-	out = img(Rect(0, 0, img.cols, img.rows));
-	const int ROAD = 0, CAR_BM = 1, PERSON = 2;
-	DetectOpt detectOpt[3];
-	detectOpt[ROAD] = { 32, 32, 32, 32, 1.2, false, false, false };
-	detectOpt[CAR_BM] = { 96, 128, 8, 8, 1.2, false, false, false };
-	detectOpt[PERSON] = { 128, 64, 8, 8, 1.2, false, false, false };
-	detect(out, detectOpt);
+	Mat img2(img, Rect(0, 0, img.cols, img.rows));
+	cv::cvtColor(img2, out, CV_BGR2GRAY);
+	resize(out, out, Size(out.cols / 1.5, out.rows / 1.5));
+	DetectOpt detectOpt = { 128, 64, 8, 8, 1.2, false/*isUseDp*/, true/*isPostPro*/, false/*isGetHard*/ };
+	detectOpt.isUseDp = false; 
+	detectOpt.isGetHard = false;
+	//detectMultiClassifier(out, out.rows, out.cols, detectOpt);
+	detectMultiScale(out, out.rows, out.cols, detectOpt);
+	//out = img(Rect(0, 0, img.cols, img.rows));
+	//const int ROAD = 0, CAR_BM = 1, PERSON = 2;
+	//DetectOpt detectOpt[3];
+	//detectOpt[ROAD] = { 32, 32, 32, 32, 1.2, false, false, false };
+	//detectOpt[CAR_BM] = { 96, 128, 8, 8, 1.2, false, false, false };
+	//detectOpt[PERSON] = { 128, 64, 8, 8, 1.2, false, false, false };
+	//detect(out, detectOpt);
 }
 
 /*CHECK LIST*/

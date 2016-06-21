@@ -9,10 +9,10 @@ using namespace std;
 using namespace cv;
 
 
-#define TRAIN_IMG_R (96u)
-#define TRAIN_IMG_C  (128u)
-#define POS_SAM_NUM  0   
-#define NEG_SAM_NUM  0
+#define TRAIN_IMG_R (156u)
+#define TRAIN_IMG_C  (78u)
+#define POS_SAM_NUM  2416   
+#define NEG_SAM_NUM  12180
 #define HARD_SAM_NUM 0
 
 const string posTrainPath = "D:\\trainPics\\inria_pos_128x64\\";
@@ -22,8 +22,8 @@ const string posTrainTxt = posTrainPath + "pos.txt";
 const string negTrainTxt = negTrainPath + "neg.txt";
 const string hardTrainTxt = hardTrainPath + "hard.txt";
 
-const char ftrPosFileName[256] = "ftrPos192x96_acf_2416p_5000n.txt";
-const char ftrNegFileName[256] = "ftrNeg192x96_acf_2416p_5000n.txt";
+const char ftrPosFileName[256] = "ftrPos_156x78_acf_2416p.txt";
+const char ftrNegFileName[256] = "ftrNeg_156x78_acf_6090n.txt";
 const char ftrHardFileName[256] = "ftrHard_96x128_acf_bm_21848h.txt";
 
 
@@ -63,6 +63,7 @@ void sampleTrain(){
 
 	//NEG
 	for (int num = 0; num < NEG_SAM_NUM && getline(finNeg, ImgName); num++){
+		if (num % 2 == 0) continue;
 		cout << "Processing： " << ImgName << endl;
 		ImgName = negTrainPath + ImgName;
 		Mat src = imread(ImgName, 0); assert(src.data != NULL);
@@ -140,8 +141,9 @@ static void checkParamSampleTrain(){
 	printf("THE NAME OF FILE SAVE HARD FEATURE: %s\n\n", ftrHardFileName);
 
 	//Warning
-	printf("\nWARNING: %s and %s and %s will be deleted if coninue running\n",
-		ftrPosFileName, ftrNegFileName, ftrHardFileName);
+	printf("\nWARNING:\n");
+	printf("%s and %s and %s will be deleted if coninue running\n",ftrPosFileName, ftrNegFileName, ftrHardFileName);
+	printf("负样本已经设置为每两张取一张作为训练样本!!!\n");
 
 	printf("\nDo you want to continue: y/n?\n");
 	char ch = 'c';  

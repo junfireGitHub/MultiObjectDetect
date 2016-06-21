@@ -78,15 +78,8 @@ void imgTest(){/*在图片上进行检测*/
 		
 		double duration_detect = static_cast<double>(getTickCount());
 
-		//DetectOpt detectOpt = {96, 128, 8, 8, 1.2, false/*isUseDp*/, false/*isPostPro*/, false/*isGetHard*/};
-		//detectMultiScale(src, src.rows, src.cols, detectOpt);
-
-		const int ROAD = 0, CAR_BM = 1, PERSON = 2;
-		DetectOpt detectOpt[3];
-		detectOpt[ROAD] = { 32, 32, 32, 32, 1.2, false, false, false };
-		detectOpt[CAR_BM] = { 96, 128, 8, 8, 1.2, false, false, false };
-		detectOpt[PERSON] = { 128, 64, 8, 8, 1.2, false, false, false };
-		detect(src, detectOpt);
+		DetectOpt detectOpt = {96, 128, 8, 8, 1.2, false/*isUseDp*/, false/*isPostPro*/, false/*isGetHard*/};
+		detectMultiScale(src, src.rows, src.cols, detectOpt);
 
 		duration_detect = static_cast<double>(getTickCount()) - duration_detect;
 		printf("detect duration time(not accurate): %fms\n", 1000.0 * duration_detect / getTickFrequency());

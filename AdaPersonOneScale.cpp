@@ -10,7 +10,7 @@ float adaPersonOneScale(const float *data){
 			k = child[k] - (data[fids[pos + k]] < thrs[pos + k]);
 		}
 		result += hs[pos + k];
-		if (result < -1) return  result;
+		//if (result < -1) return  result;
 		//if (result > 10 - (i >> 7)) return  result;
 		pos += weak_dimension;
 	}
