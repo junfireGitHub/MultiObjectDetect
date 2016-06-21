@@ -13,9 +13,9 @@ using namespace cv;
 #define TRAIN_IMG_C  (128u)
 #define POS_SAM_NUM  0   
 #define NEG_SAM_NUM  0
-#define HARD_SAM_NUM 21848
+#define HARD_SAM_NUM 0
 
-const string posTrainPath = "D:\\trainPics\\pos\\";
+const string posTrainPath = "D:\\trainPics\\inria_pos_128x64\\";
 const string negTrainPath = "D:\\trainPics\\neg\\";
 const string hardTrainPath = "D:\\trainPics\\BIKE_AND_EBIKE\\hard_96x128\\";
 const string posTrainTxt = posTrainPath + "pos.txt";

@@ -14,7 +14,7 @@ void bbNmsMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 			switch (bb[i].obType){
 			//case CAR:    rectangle(src, r, Scalar(0, 255, 0), 1); break;//green
 			//case BM:   rectangle(src, r, Scalar(0, 0, 255), 1); break;//red
-			case PERSON: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
+			case PERSON: rectangle(src, r, Scalar(255), 2); break;//blue
 			//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
 			//case ROAD:   rectangle(src, r, Scalar(0, 255, 255), 1); break;//gray
 			}
@@ -35,9 +35,9 @@ void bbNmsMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 				for (int k = 0; k < foundFiltered.size(); k++){
 					Rect r = foundFiltered[k];
 					switch (obType[i]){
-					case CAR:    rectangle(src, r, Scalar(0, 255, 0), 2); break;//green
-					case BM:     rectangle(src, r, Scalar(0, 0, 255), 2); break;//red
-					case PERSON: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
+					//case CAR:    rectangle(src, r, Scalar(0, 255, 0), 2); break;//green
+					//case BM:     rectangle(src, r, Scalar(0, 0, 255), 2); break;//red
+					case PERSON: rectangle(src, r, Scalar(255), 2); break;//blue
 					//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;
 					//case ROAD:   rectangle(src, r, Scalar(128, 128, 128), 1); break;
 					}

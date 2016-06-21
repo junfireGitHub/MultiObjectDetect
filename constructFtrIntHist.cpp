@@ -207,15 +207,8 @@ static void computeChnShrink(double intHist[][MAX_IN_IMG_C + 1], int srcR, int s
 
 //ACF 
 void constructFtrIntHist(const cv::Mat& src){
-	//cv::Mat src = mat.clone();
-	//if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
-	//	if (src.rows > src.cols)
-	//		cv::resize(src, src, cv::Size(floor(MAX_IN_IMG_R / src.rows*src.cols), MAX_IN_IMG_R));
-	//	else
-	//		cv::resize(src, src, cv::Size(MAX_IN_IMG_C, floor(MAX_IN_IMG_C/src.cols*src.rows)));
-	//}
-	//assert(src.rows <= MAX_IN_IMG_R && src.cols <= MAX_IN_IMG_C);
 
+	assert(src.channels() == 1);
 	int srcR = src.rows;
 	int srcC = src.cols;
 	unsigned char *pSrc = new unsigned char[srcR*srcC];

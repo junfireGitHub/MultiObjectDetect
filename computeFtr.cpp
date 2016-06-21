@@ -4,7 +4,6 @@
 
 
 void getColorFeature(const float *src, int srcC, rect r, float *pColorFtr){
-
 	int i = 0, j = 0;
 	int kd = 0;
 	int ks = r.y*srcC + r.x;
@@ -19,7 +18,6 @@ void getColorFeature(const float *src, int srcC, rect r, float *pColorFtr){
 }
 
 void getGradMagFeature(const float *pMag, int srcC, rect r, float *pMagFtr){
-
 	int i = 0, j = 0;
 	int kd = 0;
 	int ks = r.y*srcC + r.x;
@@ -34,8 +32,6 @@ void getGradMagFeature(const float *pMag, int srcC, rect r, float *pMagFtr){
 }
 
 static void getGradHistFeature(const float pSrc[][NUM_ORIENT], int srcC, rect r, float *pFtr){
-
-
 	int i = 0, j = 0;
 	int kd = 0;
 	int ks = r.y*srcC + r.x;
