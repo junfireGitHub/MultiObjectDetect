@@ -7,7 +7,6 @@
 #include"videoTest.h"
 #include"reduceCandidate.h"
 #include"imgTest.h"
-#include"testCode.h"
 #include"opencvLib.h"
 #include<iostream>
 #include<fstream>
@@ -33,7 +32,6 @@ int main(){
 		case 4: sampleTrain(); break;
 		case 5: getHardFromNeg(); break;
 		case 6: sampleTest(); break;
-		case 7: testCode(); break;
 		default: exit(-1);
 	}
 	 
