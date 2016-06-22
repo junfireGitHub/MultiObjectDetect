@@ -20,9 +20,8 @@ int main(){
 	cout << "4 : sampleTrain()" << endl;
 	cout << "5 : getHardFromNeg()" << endl;
 	cout << "6 : sampleTest()" << endl;
-	cout << "7 : testCode()" << endl;
 	cout << endl;
-	cout << "please input right number to run corresponding program" << endl;
+	cout << "please input right number(1-6) to run corresponding program" << endl;
 
 	int num; cin >> num;
 	switch (num){
@@ -32,7 +31,7 @@ int main(){
 		case 4: sampleTrain(); break;
 		case 5: getHardFromNeg(); break;
 		case 6: sampleTest(); break;
-		default: exit(-1);
+		default: exit(0);
 	}
 	 
 	system("pause"); return 0;

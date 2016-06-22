@@ -9,14 +9,14 @@
 
 void detect(Mat &img, Mat &out){
 	// Convert to gray
-	Mat img2(img, Rect(0, 0, img.cols, img.rows));
+	Mat img2(img, Rect(0, 0, img.cols/2, img.rows));
 	cv::cvtColor(img2, out, CV_BGR2GRAY);
-	resize(out, out, Size(out.cols / 1.5, out.rows / 1.5));
+	//resize(out, out, Size(out.cols / 1.5, out.rows / 1.5));
 	DetectOpt detectOpt = { 128, 64, 8, 8, 1.2, false/*isUseDp*/, true/*isPostPro*/, false/*isGetHard*/ };
 	detectOpt.isUseDp = false; 
 	detectOpt.isGetHard = false;
-	//detectMultiClassifier(out, out.rows, out.cols, detectOpt);
-	detectMultiScale(out, out.rows, out.cols, detectOpt);
+	detectMultiClassifier(out, out.rows, out.cols, detectOpt);
+	//detectMultiScale(out, out.rows, out.cols, detectOpt);
 	//out = img(Rect(0, 0, img.cols, img.rows));
 	//const int ROAD = 0, CAR_BM = 1, PERSON = 2;
 	//DetectOpt detectOpt[3];
@@ -35,8 +35,8 @@ void videoTest()
 {
     #define ONLY_SHOW true  //if false, output video will be saved
 
-	//string videoPath = "D:\\MyProject\\MultiObjectDetect-v3.5\\testVideo\\加滤光片\\20160614155834.avi";
-	string videoPath = "D:\\testVideo\\ydp_test1.MP4";
+	string videoPath = "D:\\MyProject\\MultiObjectDetect-v3.5\\testVideo\\静止的人.avi";
+	//string videoPath = "D:\\testVideo\\ydp_test1.MP4";
 	string videoOutPath = "D:\\testVideo\\ydp_test2_result.avi";
     
 	VideoProcessor processor;

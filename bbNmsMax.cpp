@@ -12,7 +12,7 @@ void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 			switch (bb[i].obType){
 				//case CAR:    rectangle(src, r, Scalar(0, 255, 0), 1); break;//green
 				//case BM:   rectangle(src, r, Scalar(0, 0, 255), 1); break;//red
-			case PERSON: rectangle(src, r, Scalar(255, 0, 0), 2); break;
+			case PERSON: rectangle(src, r, Scalar(255), 2); break;
 				//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;//blue
 				//case ROAD:   rectangle(src, r, Scalar(0, 255, 255), 1); break;//gray
 			}
@@ -37,7 +37,7 @@ void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 					switch (obType[i]){
 					  //case CAR:    rectangle(src, r, Scalar(0, 255, 0), 2); break;//green
 					  //case BM:     rectangle(src, r, Scalar(0, 0, 255), 2); break;//red
-					case PERSON: rectangle(src, r, Scalar(255), 1); break;
+					case PERSON: rectangle(src, r, Scalar(255), 2); break;
 						//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;
 						//case ROAD:   rectangle(src, r, Scalar(128, 128, 128), 1); break;
 					}
@@ -85,9 +85,9 @@ static vector<Rect> mergeRect(const vector<Rect>& rec, const vector<float> &scor
 		for (int j = i + 1; j < rec.size(); ++j){
 			if (r[j].x == -1) continue;
 			if (isMerge(rec[i], rec[j])){
-				int pos = score[i]>=score[j] ? j : i;
+				int pos = score[i]>=score[j]+5 ? j : i;
 				r[pos].x = -1;
-				pos = score[i]>=score[j] ? i : j;
+				pos = score[i]>=score[j]+5 ? i : j;
 				pc[pos]++;
 			}
 		}

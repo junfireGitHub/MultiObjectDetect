@@ -206,6 +206,7 @@ static void computeChnShrink(double intHist[][MAX_IN_IMG_C + 1], int srcR, int s
 }
 
 //ACF 
+
 void constructFtrIntHist(const cv::Mat& src){
 	assert(src.channels() == 1);
 	int srcR = src.rows;
@@ -213,6 +214,7 @@ void constructFtrIntHist(const cv::Mat& src){
 	unsigned char *pSrc = new unsigned char[srcR*srcC];
 	Mat2ImgPointer(src, pSrc);
 
+	//filter(pSrc, srcR, srcC);
 	computeGradient(pSrc, srcR, srcC, gradMag, gradOri);
 
 	constructGradHistIntHist(gradOri, gradMag, srcR, srcC);
@@ -226,6 +228,7 @@ void constructFtrIntHist(const cv::Mat& src){
 
 	delete[] pSrc;
 }
+
 
 //void filter(UInt8 *pImg, int imgR, int imgC){
 //	int i = 0, j = 0;

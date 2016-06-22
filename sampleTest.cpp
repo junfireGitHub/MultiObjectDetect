@@ -29,7 +29,6 @@ void sampleTest(){
 	ifstream finNeg(negNameTxt); if (!finNeg){ printf("file fileTest is NULL"); system("pause");}
 
 	string ImgName;
-	//static unsigned char pImg[TEST_IMG_R * TEST_IMG_C];
 	static const int TEST_CHN_FTR_DIM = getFtrDim(TEST_IMG_R, TEST_IMG_C);
 	static float *pFtrForTest = new float[TEST_CHN_FTR_DIM];
 
@@ -44,9 +43,6 @@ void sampleTest(){
 			resize(src, src, Size(TEST_IMG_C, TEST_IMG_R));//TODO
 		assert(src.rows == TEST_IMG_R && src.cols == TEST_IMG_C);
 
-		//assert(src.rows*src.cols == sizeof(pImg) / sizeof(pImg[0]));
-		//Mat2ImgPointer(src, pImg);
-		//constructFtrIntHist(pImg, TEST_IMG_R, TEST_IMG_C);
 		constructFtrIntHist(src);
 		rect r = { 0, 0, TEST_IMG_C, TEST_IMG_R };
 		computeFtr(TEST_IMG_R, TEST_IMG_C, r, pFtrForTest, TEST_CHN_FTR_DIM);
@@ -68,9 +64,6 @@ void sampleTest(){
 			resize(src, src, Size(TEST_IMG_C, TEST_IMG_R));//TODO
 		assert(src.rows == TEST_IMG_R&&src.cols == TEST_IMG_C);
 
-		//assert(src.rows*src.cols == sizeof(pImg) / sizeof(pImg[0]));
-		//Mat2ImgPointer(src, pImg);
-		//constructFtrIntHist(pImg, TEST_IMG_R, TEST_IMG_C);
 		constructFtrIntHist(src);
 		rect r = { 0, 0, TEST_IMG_C, TEST_IMG_R };
 		computeFtr(TEST_IMG_R, TEST_IMG_C, r, pFtrForTest, TEST_CHN_FTR_DIM);

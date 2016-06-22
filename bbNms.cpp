@@ -1,5 +1,6 @@
 #include "postPro.h"
 #include "opencvLib.h"
+#include"getHardFromNeg.h"
 using namespace cv;
 
 static bool similarRect(const Rect& r1, const Rect& r2, float weight);
@@ -31,13 +32,13 @@ void bbNmsMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro){
 					found.push_back(bb[j].pos);
 			}
 			if (obType[i] != ROAD){
-				vector<Rect> foundFiltered = mergeRect(found, 2, 0.2); //merge rects
+				vector<Rect> foundFiltered = mergeRect(found, 1, 0.2); //merge rects
 				for (int k = 0; k < foundFiltered.size(); k++){
 					Rect r = foundFiltered[k];
 					switch (obType[i]){
 					//case CAR:    rectangle(src, r, Scalar(0, 255, 0), 2); break;//green
 					//case BM:     rectangle(src, r, Scalar(0, 0, 255), 2); break;//red
-					case PERSON: rectangle(src, r, Scalar(255), 2); break;//blue
+					case PERSON:   rectangle(src, r, Scalar(255), 2); break;//blue
 					//case ELECBIKE: rectangle(src, r, Scalar(255, 0, 0), 2); break;
 					//case ROAD:   rectangle(src, r, Scalar(128, 128, 128), 1); break;
 					}
@@ -60,14 +61,15 @@ void bbNms(Mat& src, vector<Rect> found, bool isPostPro){
 			rectangle(src, r, Scalar(255), 1);
 		}
 	}else{
-		vector<Rect> foundFiltered = mergeRect(found, 2, 0.2);
+		vector<Rect> foundFiltered = mergeRect(found, 1, 0.2);
 		printf("afterPostProCount: %d\n", foundFiltered.size());
+		saveHardPics(src, foundFiltered);
 
 		//Mat srcTemp = src.clone();
-		for (int i = 0; i < foundFiltered.size(); i++){
+	/*	for (int i = 0; i < foundFiltered.size(); i++){
 			Rect r = foundFiltered[i];
 			rectangle(src, r, Scalar(255), 1);
-		}
+		}*/
 	}
 }
 

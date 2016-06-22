@@ -7,16 +7,16 @@
 using namespace std;
 using namespace cv;
 
-static string negForHardPath = "D:\\trainPics\\BIKE_AND_EBIKE\\negForHard\\";
+static string negForHardPath = "D:\\trainPics\\negPicsForHardExamples\\";
 static string negForHardNameTxt = negForHardPath + "negForHard.txt";
 static int hardIdStartNum = 1;
-char saveHardPath[256] = "D:\\trainPics\\BIKE_AND_EBIKE\\hard_96x128\\";
+char saveHardPath[256] = "D:\\trainPics\\hardForAcf\\152x76\\";
 
-#define HARD_IMG_ROWS (96u)
-#define HARD_IMG_COLS (128u)
-#define WIN_STEP_R (16u)
-#define WIN_STEP_C (16u)
-#define SCALE (1.5f)
+#define HARD_IMG_ROWS (152u)
+#define HARD_IMG_COLS (76u)
+#define WIN_STEP_R (8u)
+#define WIN_STEP_C (8u)
+#define SCALE (1.2f)
 
 static void checkParaGetNegFromHard();
 
@@ -31,7 +31,7 @@ void getHardFromNeg(){
 		imgName = negForHardPath + imgName;
 		Mat src = imread(imgName, 0); assert(src.data != NULL);
 		DetectOpt detectOpt = {HARD_IMG_ROWS, HARD_IMG_COLS, WIN_STEP_R, WIN_STEP_C, SCALE, 
-			false/*isUseDp*/, false/*isPostPro*/, true/*isGetHard*/ };
+			false/*isUseDp*/, true/*isPostPro*/, true/*isGetHard*/ };
 		detectMultiScale(src, src.rows, src.cols, detectOpt);
 	}
 	cout << "congragulation, program run successfully" << endl;
@@ -44,7 +44,6 @@ void saveHardPics(Mat &src, vector<Rect> found){
 		Rect r = found[i];
 		Mat hardExampleImg = src(r);//从原图上截取矩形框大小的图片  
 		resize(hardExampleImg, hardExampleImg, Size(HARD_IMG_COLS, HARD_IMG_ROWS));//将剪裁出来的图片缩放为64*128大小 
-		//sprintf(saveName, "D:\\trainPics\\hardForChnsFtr\\192x96\\hard%d.jpg", hardIdStartNum++);//生成hard example图片的文件名 
 		sprintf(hardPicName, "hard%d.jpg", hardIdStartNum++);//生成hard example图片的文件名  
 		strcpy(saveName, saveHardPath);
 		strcat(saveName,hardPicName);

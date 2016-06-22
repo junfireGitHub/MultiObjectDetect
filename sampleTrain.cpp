@@ -9,22 +9,22 @@ using namespace std;
 using namespace cv;
 
 
-#define TRAIN_IMG_R (156u)
-#define TRAIN_IMG_C  (78u)
-#define POS_SAM_NUM  2416   
-#define NEG_SAM_NUM  12180
-#define HARD_SAM_NUM 0
+#define TRAIN_IMG_R (152u)
+#define TRAIN_IMG_C  (76u)
+#define POS_SAM_NUM  0   
+#define NEG_SAM_NUM  0
+#define HARD_SAM_NUM 2950
 
 const string posTrainPath = "D:\\trainPics\\inria_pos_128x64\\";
 const string negTrainPath = "D:\\trainPics\\neg\\";
-const string hardTrainPath = "D:\\trainPics\\BIKE_AND_EBIKE\\hard_96x128\\";
+const string hardTrainPath = "D:\\trainPics\\hardForAcf\\152x76\\";
 const string posTrainTxt = posTrainPath + "pos.txt";
 const string negTrainTxt = negTrainPath + "neg.txt";
 const string hardTrainTxt = hardTrainPath + "hard.txt";
 
-const char ftrPosFileName[256] = "ftrPos_156x78_acf_2416p.txt";
-const char ftrNegFileName[256] = "ftrNeg_156x78_acf_6090n.txt";
-const char ftrHardFileName[256] = "ftrHard_96x128_acf_bm_21848h.txt";
+const char ftrPosFileName[256] = "ftrPos_128x64_acf_2416p.txt";
+const char ftrNegFileName[256] = "ftrNeg_128x64_acf_12180n.txt";
+const char ftrHardFileName[256] = "ftrHard_152x76_acf_2416p_12180n_2950h.txt";
 
 
 static int appendAdaboostData2File(const char * filename, const float * arrayData, int dimension, int num);
@@ -63,7 +63,7 @@ void sampleTrain(){
 
 	//NEG
 	for (int num = 0; num < NEG_SAM_NUM && getline(finNeg, ImgName); num++){
-		if (num % 2 == 0) continue;
+		//if (num % 2 == 0) continue;
 		cout << "Processing： " << ImgName << endl;
 		ImgName = negTrainPath + ImgName;
 		Mat src = imread(ImgName, 0); assert(src.data != NULL);
@@ -143,7 +143,7 @@ static void checkParamSampleTrain(){
 	//Warning
 	printf("\nWARNING:\n");
 	printf("%s and %s and %s will be deleted if coninue running\n",ftrPosFileName, ftrNegFileName, ftrHardFileName);
-	printf("负样本已经设置为每两张取一张作为训练样本!!!\n");
+	//printf("负样本已经设置为每两张取一张作为训练样本!!!\n");
 
 	printf("\nDo you want to continue: y/n?\n");
 	char ch = 'c';  

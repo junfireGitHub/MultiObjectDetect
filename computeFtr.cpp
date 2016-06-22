@@ -48,8 +48,8 @@ int getFtrDim(int rows, int cols){
 }
 
 //from constructFtrIntHist.cpp
-extern float grayImgShrink[MAX_IN_IMG_SIZE / SHRINK / SHRINK];
-extern float gradMagShrink[MAX_IN_IMG_SIZE / SHRINK / SHRINK];
+extern float grayImgShrink[(MAX_IN_IMG_R / SHRINK)* (MAX_IN_IMG_C / SHRINK)];
+extern float gradMagShrink[(MAX_IN_IMG_R / SHRINK)* (MAX_IN_IMG_C / SHRINK)];
 extern float gradHistShrink[(MAX_IN_IMG_R / BIN_SIZE)*(MAX_IN_IMG_C / BIN_SIZE)][NUM_ORIENT];
 
 void computeFtr(int srcR, int srcC, rect r, float *pChnFtr, int ftrDim){

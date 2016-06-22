@@ -1,5 +1,4 @@
 #include "AdaPersonMultiScale.h"
-#include "classify.h"
 
 //void adaPersonMultiScale(const float *data, int num, int dimension, float *result, int id){
 //	int i, j;
@@ -26,8 +25,9 @@
 //	}
 //}
 
-float adaPersonMultiScale(const float *data, int dimension, int id){
-	int i, j;
+float adaPersonMultiScale(const float *data, int dimension, int id)
+{
+	int i;
 	int pos = 0;
 	float result = .0f;
 
