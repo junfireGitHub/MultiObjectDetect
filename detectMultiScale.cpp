@@ -172,7 +172,7 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 				}
 				if (likely){
 					computedWinCount++;
-					rect r = { startC, startR, newWinC, newWinR    }; 
+					rect r = { startC, startR, newWinC, newWinR }; 
 					int ftrDim = getFtrDim(newWinR, newWinC);
 					computeFtr(imgR, imgC, r, pFtrForDetect, ftrDim);
 

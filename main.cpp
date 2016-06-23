@@ -13,6 +13,7 @@
 using namespace std;
 using namespace cv;
 
+
 int main(){
 	cout << "1 : imgTest()" << endl;
 	cout << "2 : imgTestDp()" << endl;
@@ -32,8 +33,7 @@ int main(){
 		case 5: getHardFromNeg(); break;
 		case 6: sampleTest(); break;
 		default: exit(0);
-	}
-	 
+	}	 
 	system("pause"); return 0;
 }
 

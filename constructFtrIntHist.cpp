@@ -273,6 +273,56 @@ void constructFtrIntHist(const cv::Mat& src){
 //	}
 //}
 
+//void filter(UInt8 *pImg, int imgR, int imgC){
+//	int i = 0, j = 0;
+//	for (j = 0; j < imgR; ++j){
+//		int pos = j*imgC;
+//		int pre = pImg[pos];
+//		for (i = 1; i < imgC - 1; ++i){
+//			pos++;
+//			int now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1]) >> 2;
+//			pImg[pos - 1] = pre;
+//			pre = now;
+//		}
+//		pImg[pos] = pre;
+//	}
+//}
+//
+//void gradHistFilter(UInt8 a[][NUM_ORIENT], int num_rows){
+//	int i = 0, j = 0;
+//	UInt8 *p = &a[0][0];
+//	for (i = 0; i<NUM_ORIENT; ++i){
+//		int pre = p[i];
+//		int pos = i;
+//		for (j = NUM_ORIENT; j < (num_rows - 1)* NUM_ORIENT; j += NUM_ORIENT){
+//			pos = j + i;
+//			int now = (p[pos - NUM_ORIENT] + p[pos] + p[pos] + p[pos + NUM_ORIENT]) >> 2;
+//			p[pos - NUM_ORIENT] = pre;
+//			pre = now;
+//		}
+//		p[pos] = pre;
+//	}
+//}
+//int test(){
+//	UInt8 a[4][3] = {
+//		{ 1, 2, 8 },
+//		{ 9, 4, 6 },
+//		{ 1, 2, 8 },
+//		{ 9, 4, 6 },
+//	};
+//	filter(&a[0][0], 4, 3);
+//	UInt8 *p = &a[0][0];
+//	for (int i = 0; i < 12; ++i)
+//		printf("%d ", p[i]);
+//	cout << endl;
+//	gradHistFilter(a, 4);
+//	for (int i = 0; i < 12; ++i)
+//		printf("%d ", p[i]);
+//	cout << endl;
+//
+//	return 0;
+//}
+
 
 
 
