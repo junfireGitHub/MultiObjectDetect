@@ -207,6 +207,52 @@ static void computeChnShrink(double intHist[][MAX_IN_IMG_C + 1], int srcR, int s
 
 //ACF 
 
+static void filter(UInt8 *pImg, int imgR, int imgC){
+	int i = 0, j = 0;
+	for (j = 0; j < imgR; ++j){
+		int pos = j*imgC;
+		int pre = pImg[pos];
+		for (i = 1; i < imgC - 1; ++i){
+			pos++;
+			int now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1]) >> 2;
+			pImg[pos - 1] = pre;
+			pre = now;
+		}
+		pImg[pos] = pre;
+	}
+}
+
+static void filterFloat(float *pImg, int imgR, int imgC){
+	int i = 0, j = 0;
+	for (j = 0; j < imgR; ++j){
+		int pos = j*imgC;
+		float pre = pImg[pos];
+		for (i = 1; i < imgC - 1; ++i){
+			pos++;
+			float now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1])/4;
+			pImg[pos - 1] = pre;
+			pre = now;
+		}
+		pImg[pos] = pre;
+	}
+}
+
+static void gradHistFilter(float a[][NUM_ORIENT], int num_rows){
+	int i = 0, j = 0;
+	float *p = &a[0][0];
+	for (i = 0; i < NUM_ORIENT; ++i){
+		float pre = p[i];
+		int pos = i;
+		for (j = NUM_ORIENT; j < (num_rows - 1)* NUM_ORIENT; j += NUM_ORIENT){
+			pos = j + i;
+			float now = (p[pos - NUM_ORIENT] + p[pos] + p[pos] + p[pos + NUM_ORIENT])/4;
+			p[pos - NUM_ORIENT] = pre;
+			pre = now;
+		}
+		p[pos] = pre;
+	}
+}
+
 void constructFtrIntHist(const cv::Mat& src){
 	assert(src.channels() == 1);
 	int srcR = src.rows;
@@ -214,17 +260,20 @@ void constructFtrIntHist(const cv::Mat& src){
 	unsigned char *pSrc = new unsigned char[srcR*srcC];
 	Mat2ImgPointer(src, pSrc);
 
-	//filter(pSrc, srcR, srcC);
+	filter(pSrc, srcR, srcC);//
 	computeGradient(pSrc, srcR, srcC, gradMag, gradOri);
 
 	constructGradHistIntHist(gradOri, gradMag, srcR, srcC);
 	computeGradHistShrink(srcR, srcC, BIN_SIZE, gradHistShrink);
+	//gradHistFilter(gradHistShrink, (MAX_IN_IMG_R / BIN_SIZE)*(MAX_IN_IMG_C / BIN_SIZE));//
 
 	constructGradMagIntHist(gradMag, srcR, srcC);
 	computeChnShrink(gradMagIntHist, srcR, srcC, SHRINK, gradMagShrink);
+	//filterFloat(gradMagShrink, (MAX_IN_IMG_R / SHRINK), (MAX_IN_IMG_C / SHRINK));//
 
 	constructColorIntHist(pSrc, srcR, srcC);
 	computeChnShrink(grayIntHist, srcR, srcC, SHRINK, grayImgShrink);
+	//filterFloat(grayImgShrink, (MAX_IN_IMG_R / SHRINK), (MAX_IN_IMG_C / SHRINK));//
 
 	delete[] pSrc;
 }
@@ -322,7 +371,6 @@ void constructFtrIntHist(const cv::Mat& src){
 //
 //	return 0;
 //}
-
 
 
 
