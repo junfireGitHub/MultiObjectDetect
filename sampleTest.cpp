@@ -11,13 +11,13 @@ using namespace cv;
 
 
 #define TEST_IMG_R (128u)
-#define TEST_IMG_C (64u)
-#define POS_SAM_NUM 1126    
+#define TEST_IMG_C (128u)
+#define POS_SAM_NUM 2416    
 #define NEG_SAM_NUM 9000
 
-static string posTestPath = "D:\\testPics\\INRIA_pos_134x70_test\\";
+static string posTestPath = "C:\\Users\\FIRE\\Documents\\Tencent Files\\1131990674\\FileRecv\\INRIA\\";
 static string negTestPath = "D:\\testPics\\INRIA_neg_128x64_test\\";
-static string posNameTxt = posTestPath + "INRIA_pos_134x70_test.txt";
+static string posNameTxt = posTestPath + "pos.txt";
 static string negNameTxt = negTestPath + "INRIA_neg_128x64_test.txt";
 
 static void checkParamSampleTest();

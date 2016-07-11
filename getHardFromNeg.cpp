@@ -10,10 +10,10 @@ using namespace cv;
 static string negForHardPath = "D:\\trainPics\\negPicsForHardExamples\\";
 static string negForHardNameTxt = negForHardPath + "negForHard.txt";
 static int hardIdStartNum = 1;
-char saveHardPath[256] = "D:\\trainPics\\hardForAcf\\152x76\\";
+char saveHardPath[256] = "D:\\trainPics\\hardForUpper\\";
 
-#define HARD_IMG_ROWS (152u)
-#define HARD_IMG_COLS (76u)
+#define HARD_IMG_ROWS (128u)
+#define HARD_IMG_COLS (128u)
 #define WIN_STEP_R (8u)
 #define WIN_STEP_C (8u)
 #define SCALE (1.2f)
@@ -55,7 +55,7 @@ void saveHardPics(Mat &src, vector<Rect> found){
 static void checkParaGetNegFromHard(){
 
 	//param
-	printf("geHardFromNeg() PARAMETER\n");
+	printf("getHardFromNeg() PARAMETER\n");
 	printf("hard pics size<rows x cols> :  %d x %d\n", HARD_IMG_ROWS, HARD_IMG_COLS);
 	cout << "negForHardNameTxt: " << negForHardNameTxt << endl;
 	printf("hard pics index start from : %d\n", hardIdStartNum);	

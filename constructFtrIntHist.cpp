@@ -205,105 +205,53 @@ static void computeChnShrink(double intHist[][MAX_IN_IMG_C + 1], int srcR, int s
 	assert(pos == (srcR / shrink)*(srcC / shrink));
 }
 
-//ACF 
-
-static void filter(UInt8 *pImg, int imgR, int imgC){
-	int i = 0, j = 0;
-	for (j = 0; j < imgR; ++j){
-		int pos = j*imgC;
-		int pre = pImg[pos];
-		for (i = 1; i < imgC - 1; ++i){
-			pos++;
-			int now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1]) >> 2;
-			pImg[pos - 1] = pre;
-			pre = now;
-		}
-		pImg[pos] = pre;
-	}
-}
-
-static void filterFloat(float *pImg, int imgR, int imgC){
-	int i = 0, j = 0;
-	for (j = 0; j < imgR; ++j){
-		int pos = j*imgC;
-		float pre = pImg[pos];
-		for (i = 1; i < imgC - 1; ++i){
-			pos++;
-			float now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1])/4;
-			pImg[pos - 1] = pre;
-			pre = now;
-		}
-		pImg[pos] = pre;
-	}
-}
-
-static void gradHistFilter(float a[][NUM_ORIENT], int num_rows){
-	int i = 0, j = 0;
-	float *p = &a[0][0];
-	for (i = 0; i < NUM_ORIENT; ++i){
-		float pre = p[i];
-		int pos = i;
-		for (j = NUM_ORIENT; j < (num_rows - 1)* NUM_ORIENT; j += NUM_ORIENT){
-			pos = j + i;
-			float now = (p[pos - NUM_ORIENT] + p[pos] + p[pos] + p[pos + NUM_ORIENT])/4;
-			p[pos - NUM_ORIENT] = pre;
-			pre = now;
-		}
-		p[pos] = pre;
-	}
-}
-
-void constructFtrIntHist(const cv::Mat& src){
-	assert(src.channels() == 1);
-	int srcR = src.rows;
-	int srcC = src.cols;
-	unsigned char *pSrc = new unsigned char[srcR*srcC];
-	Mat2ImgPointer(src, pSrc);
-
-	filter(pSrc, srcR, srcC);//
-	computeGradient(pSrc, srcR, srcC, gradMag, gradOri);
-
-	constructGradHistIntHist(gradOri, gradMag, srcR, srcC);
-	computeGradHistShrink(srcR, srcC, BIN_SIZE, gradHistShrink);
-	//gradHistFilter(gradHistShrink, (MAX_IN_IMG_R / BIN_SIZE)*(MAX_IN_IMG_C / BIN_SIZE));//
-
-	constructGradMagIntHist(gradMag, srcR, srcC);
-	computeChnShrink(gradMagIntHist, srcR, srcC, SHRINK, gradMagShrink);
-	//filterFloat(gradMagShrink, (MAX_IN_IMG_R / SHRINK), (MAX_IN_IMG_C / SHRINK));//
-
-	constructColorIntHist(pSrc, srcR, srcC);
-	computeChnShrink(grayIntHist, srcR, srcC, SHRINK, grayImgShrink);
-	//filterFloat(grayImgShrink, (MAX_IN_IMG_R / SHRINK), (MAX_IN_IMG_C / SHRINK));//
-
-	delete[] pSrc;
-}
-
-
-//void filter(UInt8 *pImg, int imgR, int imgC){
+//// preProcessing
+//static void filter(UInt8 *pImg, int imgR, int imgC){
 //	int i = 0, j = 0;
 //	for (j = 0; j < imgR; ++j){
+//		int pos = j*imgC;
+//		int pre = pImg[pos];
 //		for (i = 1; i < imgC - 1; ++i){
-//			int pos = j*imgC + i;
-//			pImg[pos] = (pImg[pos - 1] + pImg[pos] * 2 + pImg[pos + 1]) >> 2;
+//			pos++;
+//			int now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1]) >> 2;
+//			pImg[pos - 1] = pre;
+//			pre = now;
 //		}
+//		pImg[pos] = pre;
 //	}
 //}
-//void fastFilter(UInt8 *pImg, int imgR, int imgC){
-// /* if use this function, the boundary pixel can't be used, because its value is incorrect */
-//	int i = 0;
-//	for (i = 1; i < imgR*imgC-1; ++i){
-//		pImg[i] = (pImg[i - 1] + pImg[i] + pImg[i] + pImg[i + 1]) >> 2;// [1 2 1]/4
+//
+//static void filterFloat(float *pImg, int imgR, int imgC){
+//	int i = 0, j = 0;
+//	for (j = 0; j < imgR; ++j){
+//		int pos = j*imgC;
+//		float pre = pImg[pos];
+//		for (i = 1; i < imgC - 1; ++i){
+//			pos++;
+//			float now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1])/4;
+//			pImg[pos - 1] = pre;
+//			pre = now;
+//		}
+//		pImg[pos] = pre;
 //	}
 //}
-//change gray channel to rgb channel
-//rChnShrink , gChnShrink , bChnShrink
-//extractRgbChn
-//computeRChnShrink
-//computeGChnShrink
-//computeBChnShrink
-//getRChnShrinkFtr
-//getGChnShrinkFtr
-//getBChnShrinkFtr
+//
+//static void gradHistFilter(float a[][NUM_ORIENT], int num_rows){
+//	int i = 0, j = 0;
+//	float *p = &a[0][0];
+//	for (i = 0; i < NUM_ORIENT; ++i){
+//		float pre = p[i];
+//		int pos = i;
+//		for (j = NUM_ORIENT; j < (num_rows - 1)* NUM_ORIENT; j += NUM_ORIENT){
+//			pos = j + i;
+//			float now = (p[pos - NUM_ORIENT] + p[pos] + p[pos] + p[pos + NUM_ORIENT])/4;
+//			p[pos - NUM_ORIENT] = pre;
+//			pre = now;
+//		}
+//		p[pos] = pre;
+//	}
+//}
+
 //void rgb2yuv(const cv::Mat img, int imgH, int imgW, UInt8 * pY, UInt8 * pU, UInt8 * pV)
 //{
 //	UInt8 R, G, B, Y;
@@ -319,37 +267,6 @@ void constructFtrIntHist(const cv::Mat& src){
 //			*(pU + i*imgW + j) = (UInt8)(0.564*(B - Y));
 //			*(pV + i*imgW + j) = (UInt8)(0.713*(R - Y));
 //		}
-//	}
-//}
-
-//void filter(UInt8 *pImg, int imgR, int imgC){
-//	int i = 0, j = 0;
-//	for (j = 0; j < imgR; ++j){
-//		int pos = j*imgC;
-//		int pre = pImg[pos];
-//		for (i = 1; i < imgC - 1; ++i){
-//			pos++;
-//			int now = (pImg[pos - 1] + pImg[pos] + pImg[pos] + pImg[pos + 1]) >> 2;
-//			pImg[pos - 1] = pre;
-//			pre = now;
-//		}
-//		pImg[pos] = pre;
-//	}
-//}
-//
-//void gradHistFilter(UInt8 a[][NUM_ORIENT], int num_rows){
-//	int i = 0, j = 0;
-//	UInt8 *p = &a[0][0];
-//	for (i = 0; i<NUM_ORIENT; ++i){
-//		int pre = p[i];
-//		int pos = i;
-//		for (j = NUM_ORIENT; j < (num_rows - 1)* NUM_ORIENT; j += NUM_ORIENT){
-//			pos = j + i;
-//			int now = (p[pos - NUM_ORIENT] + p[pos] + p[pos] + p[pos + NUM_ORIENT]) >> 2;
-//			p[pos - NUM_ORIENT] = pre;
-//			pre = now;
-//		}
-//		p[pos] = pre;
 //	}
 //}
 //int test(){
@@ -372,9 +289,30 @@ void constructFtrIntHist(const cv::Mat& src){
 //	return 0;
 //}
 
+void constructFtrIntHist(const cv::Mat& src){
+	assert(src.channels() == 1);
+	int srcR = src.rows;
+	int srcC = src.cols;
+	unsigned char *pSrc = new unsigned char[srcR*srcC];
+	Mat2ImgPointer(src, pSrc);
 
+	//filter(pSrc, srcR, srcC);
+	computeGradient(pSrc, srcR, srcC, gradMag, gradOri);
 
+	constructGradHistIntHist(gradOri, gradMag, srcR, srcC);
+	computeGradHistShrink(srcR, srcC, BIN_SIZE, gradHistShrink);
+	//gradHistFilter(gradHistShrink, (MAX_IN_IMG_R / BIN_SIZE)*(MAX_IN_IMG_C / BIN_SIZE));//
 
+	constructGradMagIntHist(gradMag, srcR, srcC);
+	computeChnShrink(gradMagIntHist, srcR, srcC, SHRINK, gradMagShrink);
+	//filterFloat(gradMagShrink, (MAX_IN_IMG_R / SHRINK), (MAX_IN_IMG_C / SHRINK));//
+
+	constructColorIntHist(pSrc, srcR, srcC);
+	computeChnShrink(grayIntHist, srcR, srcC, SHRINK, grayImgShrink);
+	//filterFloat(grayImgShrink, (MAX_IN_IMG_R / SHRINK), (MAX_IN_IMG_C / SHRINK));//
+
+	delete[] pSrc;
+}
 
 
 

@@ -12,6 +12,7 @@
 #include"opencvLib.h"
 using namespace cv;
 
+
 static inline int getZoomNum(int imgR, int imgC, int winR, int winC, float scale){
 	assert(scale > 1);
 	int zoomNumR = log((float)imgR / winR) / log(scale);
@@ -94,11 +95,12 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	printf("trueWinCount: %d\n", trueWinCount);
 
 	if (trueWinCount > 0){
-		if (detectOpt.isGetHard)   bbNms(src, found, detectOpt.isPostPro);
-	    else bbNmsMultiClass(src, bb, detectOpt.isPostPro);
+		if (detectOpt.isGetHard)   saveHardPics(src, found);
+		else bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro);
 	}
 
 	delete[] pFtrForDetect;
+	pFtrForDetect = NULL;
 }
 
 //MULTI CLASSIFIER
@@ -200,5 +202,5 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 		//bbNmsMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
 		bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
 	}
-	delete[] pFtrForDetect;
+	delete[] pFtrForDetect; pFtrForDetect = NULL;
 }

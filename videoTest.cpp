@@ -12,7 +12,7 @@ void detect(Mat &img, Mat &out){
 	Mat img2(img, Rect(0, 0, img.cols/2, img.rows));
 	cv::cvtColor(img2, out, CV_BGR2GRAY);
 	//resize(out, out, Size(out.cols / 1.5, out.rows / 1.5));
-	DetectOpt detectOpt = { 128, 64, 8, 8, 1.2, false/*isUseDp*/, true/*isPostPro*/, false/*isGetHard*/ };
+	DetectOpt detectOpt = { 128, 128, 8, 8, 1.2, false/*isUseDp*/, true/*isPostPro*/, false/*isGetHard*/ };
 	detectOpt.isUseDp = false; 
 	detectOpt.isGetHard = false;
 	detectMultiClassifier(out, out.rows, out.cols, detectOpt);

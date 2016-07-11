@@ -9,22 +9,22 @@ using namespace std;
 using namespace cv;
 
 
-#define TRAIN_IMG_R (152u)
-#define TRAIN_IMG_C  (76u)
+#define TRAIN_IMG_R (128u)
+#define TRAIN_IMG_C (128u)
 #define POS_SAM_NUM  0   
 #define NEG_SAM_NUM  0
-#define HARD_SAM_NUM 2950
+#define HARD_SAM_NUM 54707
 
-const string posTrainPath = "D:\\trainPics\\inria_pos_128x64\\";
-const string negTrainPath = "D:\\trainPics\\neg\\";
-const string hardTrainPath = "D:\\trainPics\\hardForAcf\\152x76\\";
+const string posTrainPath = "C:\\Users\\FIRE\\Documents\\Tencent Files\\1131990674\\FileRecv\\MIT\\";
+const string negTrainPath = "C:\\Users\\FIRE\\Documents\\Tencent Files\\1131990674\\FileRecv\\neg4\\";
+const string hardTrainPath = "D:\\trainPics\\hardForUpper\\";
 const string posTrainTxt = posTrainPath + "pos.txt";
 const string negTrainTxt = negTrainPath + "neg.txt";
 const string hardTrainTxt = hardTrainPath + "hard.txt";
 
-const char ftrPosFileName[256] = "ftrPos_128x64_acf_2416p.txt";
-const char ftrNegFileName[256] = "ftrNeg_128x64_acf_12180n.txt";
-const char ftrHardFileName[256] = "ftrHard_152x76_acf_2416p_12180n_2950h.txt";
+const char ftrPosFileName[256] = "ftrPos_128x128_acf_1_mit.txt";
+const char ftrNegFileName[256] = "ftrNeg_128x128_acf_0n_inria.txt";
+const char ftrHardFileName[256] = "ftrHard_128x128_acf_27353h.txt";
 
 
 static int appendAdaboostData2File(const char * filename, const float * arrayData, int dimension, int num);
@@ -82,6 +82,7 @@ void sampleTrain(){
 
 	//HARD
 	for (int num = 0; num < HARD_SAM_NUM && getline(finHard, ImgName); num++){
+		if (num % 2 != 0) continue;
 		cout << "Processing£º " << ImgName << endl;
 		ImgName = hardTrainPath + ImgName;
 		Mat src = imread(ImgName, 0); assert(src.data != NULL);
@@ -96,7 +97,6 @@ void sampleTrain(){
 		computeFtr(TRAIN_IMG_R, TRAIN_IMG_C, r, pFtrForTrain, TRAIN_CHN_FTR_DIM);
 
 		appendAdaboostData2File(ftrHardFileName, pFtrForTrain, TRAIN_CHN_FTR_DIM, 1);
-
 	}
 	delete[] pFtrForTrain;
 

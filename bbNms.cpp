@@ -133,14 +133,14 @@ static vector<Rect> mergeRect(const vector<Rect>& _vec, int groupThreshold, floa
 
 	/*将嵌在大矩形框内部的小矩形框过滤掉,最后剩下的矩形框即为聚类的结果*/
 	for (i = 0; i < k; i++){
-		for (j = 0; j < k; j++){
-			if (i != j && vecRst[i].x >= vecRst[j].x && vecRst[i].y >= vecRst[j].y &&
-				vecRst[i].x + vecRst[i].width <= vecRst[j].x + vecRst[j].width  &&
-				vecRst[i].y + vecRst[i].height <= vecRst[j].y + vecRst[j].height)
-				break;
-		}
-		if (j == k)
-			rectFinalRes.push_back(vecRst[i]);
+		//for (j = 0; j < k; j++){
+		//	if (i != j && vecRst[i].x >= vecRst[j].x && vecRst[i].y >= vecRst[j].y &&
+		//		vecRst[i].x + vecRst[i].width <= vecRst[j].x + vecRst[j].width  &&
+		//		vecRst[i].y + vecRst[i].height <= vecRst[j].y + vecRst[j].height)
+		//		break;
+		//}
+		//if (j == k)
+		rectFinalRes.push_back(vecRst[i]);
 	}
 
 	free(father);
