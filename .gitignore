@@ -29,6 +29,7 @@ Debug
 *.vcxproj
 *.filters
 *.lib
+*.user
 
 # Executables
 *.exe

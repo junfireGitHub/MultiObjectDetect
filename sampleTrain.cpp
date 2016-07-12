@@ -136,7 +136,7 @@ static void checkParamSampleTrain(){
 	cout << "negTrainTxt: " << negTrainTxt << endl;
 	cout << "hardTrainTxt: " << hardTrainTxt << endl;
 	
-	printf("THE NAME OF FILE SAVE POS FEATURE : %s\n", ftrPosFileName);
+	printf("THE NAME OF FILE SAVE POS FEATURE: %s\n", ftrPosFileName);
 	printf("THE NAME OF FILE SAVE NEG FEATURE: %s\n", ftrNegFileName);
 	printf("THE NAME OF FILE SAVE HARD FEATURE: %s\n\n", ftrHardFileName);
 
