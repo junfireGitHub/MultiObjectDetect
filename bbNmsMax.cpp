@@ -6,6 +6,46 @@ using namespace cv;
 static inline bool isMerge(Rect r1, Rect r2);
 static vector<Rect> mergeRect(const vector<Rect>& rec, const vector<float> &score);
 
+typedef struct FrameRect{
+	Rect r;
+	int count;//统计该位置已经出现多少次
+}FrameRect;
+
+bool isSamePositon(Rect r1, Rect r2){
+	const int VAL = 8;
+	return abs(r1.x - r2.x) < VAL &&
+		   abs(r1.y - r2.y) < VAL &&
+		   abs(r1.x + r1.width - r2.x - r2.width) < VAL &&
+		   abs(r1.y + r1.height - r2.y - r2.height) < VAL;
+}
+
+vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Rect> thisFramePos){
+	vector<FrameRect> newLastFramePos; //用于更新 lastFramePos
+	//vector<Rect> retPos;
+	for (int i = 0; i < thisFramePos.size(); ++i){
+		newLastFramePos.push_back({ thisFramePos[i], 1 });
+	}
+
+	if (lastFramePos.size() == 0){// if first frame or no person		
+		lastFramePos = newLastFramePos;
+		return thisFramePos;
+	}
+
+	//两帧之间是否有位置相差很小，可以近似认为是相同位置的框
+	for (int i = 0; i < thisFramePos.size(); ++i){
+		for (int j = 0; j < lastFramePos.size(); ++j){
+			if (isSamePositon(thisFramePos[i], lastFramePos[j].r)){
+				thisFramePos[i] = lastFramePos[j].r;
+				newLastFramePos[i].count++;
+			}
+		}
+	}
+
+	//是否保留
+
+
+}
+
 void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox> finalBb*/){
 	if (!isPostPro){/*no postprocessing, just draw all rectangles*/
 		for (int i = 0; i < bb.size(); i++){
@@ -33,6 +73,8 @@ void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox
 			}
 			if (obType[i] != ROAD){
 				vector<Rect> foundFiltered = mergeRect(found, score); //merge rects
+				static vector<BboxForFrame> lastFrameBb;
+
 				for (int k = 0; k < foundFiltered.size(); k++){
 					Rect r = foundFiltered[k];
 					switch (obType[i]){					  
