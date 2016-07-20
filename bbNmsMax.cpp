@@ -11,39 +11,57 @@ typedef struct FrameRect{
 	int count;//统计该位置已经出现多少次
 }FrameRect;
 
-bool isSamePositon(Rect r1, Rect r2){
-	const int VAL = 8;
-	return abs(r1.x - r2.x) < VAL &&
-		   abs(r1.y - r2.y) < VAL &&
-		   abs(r1.x + r1.width - r2.x - r2.width) < VAL &&
-		   abs(r1.y + r1.height - r2.y - r2.height) < VAL;
+bool isNearPos(const Rect& r1, const Rect& r2, int VAL){
+	return abs(r1.x - r2.x) <= VAL &&
+		abs(r1.y - r2.y) <= VAL &&
+		abs(r1.x + r1.width - r2.x - r2.width) <= VAL &&
+		abs(r1.y + r1.height - r2.y - r2.height) <= VAL;
 }
 
 vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Rect> thisFramePos){
 	vector<FrameRect> newLastFramePos; //用于更新 lastFramePos
-	//vector<Rect> retPos;
+	vector<Rect> retPos = thisFramePos;
 	for (int i = 0; i < thisFramePos.size(); ++i){
 		newLastFramePos.push_back({ thisFramePos[i], 1 });
 	}
 
-	if (lastFramePos.size() == 0){// if first frame or no person		
+	// if first frame or no person	
+	if (lastFramePos.size() == 0){	
 		lastFramePos = newLastFramePos;
-		return thisFramePos;
+		return retPos;
 	}
-
+	
 	//两帧之间是否有位置相差很小，可以近似认为是相同位置的框
+	const int MAX_COUNT = 3;
 	for (int i = 0; i < thisFramePos.size(); ++i){
 		for (int j = 0; j < lastFramePos.size(); ++j){
-			if (isSamePositon(thisFramePos[i], lastFramePos[j].r)){
-				thisFramePos[i] = lastFramePos[j].r;
+			if (isNearPos(thisFramePos[i], lastFramePos[j].r, 80)){
+				retPos[i] = lastFramePos[j].r;
 				newLastFramePos[i].count++;
+				if (newLastFramePos[i].count>MAX_COUNT)
+					newLastFramePos[i].count = MAX_COUNT;
 			}
 		}
 	}
 
-	//是否保留
+	//是否保留，对于已经出现多次的框，假如这帧中没有出现而且该框周围没有框，则认为是漏检了
+	for (int j = 0; j < lastFramePos.size(); ++j){
+		if (lastFramePos[j].count == MAX_COUNT){
+			int i = 0;
+			for (i = 0; i < thisFramePos.size(); ++i){
+				if (isNearPos(thisFramePos[i], lastFramePos[j].r, 80))
+					break;
+			}
+			if (i == thisFramePos.size()){
+				retPos.push_back(lastFramePos[j].r);
+				lastFramePos[j].count = 1;
+				newLastFramePos.push_back(lastFramePos[j]);
+			}
+		}
+	}
 
-
+	lastFramePos = newLastFramePos;
+	return retPos;
 }
 
 void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox> finalBb*/){
@@ -73,7 +91,8 @@ void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox
 			}
 			if (obType[i] != ROAD){
 				vector<Rect> foundFiltered = mergeRect(found, score); //merge rects
-				static vector<BboxForFrame> lastFrameBb;
+				static vector<FrameRect> lastFramePos;
+				foundFiltered = useInterframeInfo(lastFramePos, foundFiltered);
 
 				for (int k = 0; k < foundFiltered.size(); k++){
 					Rect r = foundFiltered[k];
