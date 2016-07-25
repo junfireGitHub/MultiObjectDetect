@@ -135,12 +135,12 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 	int computedWinCount = 0;
 	
 	const float OPT[6][5] = { //here
-		{ 128, 64, 6, 6, 1 },
-		{ 144, 72, 7, 7, 1 },
+		{ 128, 64, 6, 8, 1 },
+		{ 144, 72, 7, 8, 1 },
 		{ 152, 76, 8, 8, 1 },
 
-		{ 128, 64, 6, 6, 1.331 },
-		{ 144, 72, 7, 7, 1.331 },
+		{ 128, 64, 6, 8, 1.331 },
+		{ 144, 72, 7, 8, 1.331 },
 		{ 152, 76, 8, 8, 1.331 },
 	};
 

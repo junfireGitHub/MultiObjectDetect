@@ -11,14 +11,14 @@ typedef struct FrameRect{
 	int count;//统计该位置已经出现多少次
 }FrameRect;
 
-bool isNearPos(const Rect& r1, const Rect& r2, int VAL){
+static bool isNearPos(const Rect& r1, const Rect& r2, int VAL){
 	return abs(r1.x - r2.x) <= VAL &&
 		abs(r1.y - r2.y) <= VAL &&
 		abs(r1.x + r1.width - r2.x - r2.width) <= VAL &&
 		abs(r1.y + r1.height - r2.y - r2.height) <= VAL;
 }
 
-vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Rect> thisFramePos){
+static vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Rect> thisFramePos){
 	vector<FrameRect> newLastFramePos; //用于更新 lastFramePos
 	vector<Rect> retPos = thisFramePos;
 	for (int i = 0; i < thisFramePos.size(); ++i){
@@ -32,13 +32,14 @@ vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Rect> thi
 	}
 	
 	//两帧之间是否有位置相差很小，可以近似认为是相同位置的框
-	const int MAX_COUNT = 3;
+	const int MAX_COUNT = 4;
 	for (int i = 0; i < thisFramePos.size(); ++i){
 		for (int j = 0; j < lastFramePos.size(); ++j){
-			if (isNearPos(thisFramePos[i], lastFramePos[j].r, 80)){
+			if (isNearPos(thisFramePos[i], lastFramePos[j].r, 16)){
 				retPos[i] = lastFramePos[j].r;
+				newLastFramePos[i] = lastFramePos[j];
 				newLastFramePos[i].count++;
-				if (newLastFramePos[i].count>MAX_COUNT)
+				if (newLastFramePos[i].count > MAX_COUNT)
 					newLastFramePos[i].count = MAX_COUNT;
 			}
 		}
@@ -49,12 +50,12 @@ vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Rect> thi
 		if (lastFramePos[j].count == MAX_COUNT){
 			int i = 0;
 			for (i = 0; i < thisFramePos.size(); ++i){
-				if (isNearPos(thisFramePos[i], lastFramePos[j].r, 80))
+				if (isNearPos(thisFramePos[i], lastFramePos[j].r, 24))
 					break;
 			}
-			if (i == thisFramePos.size()){
+			if (i != 0 && i == thisFramePos.size()){
 				retPos.push_back(lastFramePos[j].r);
-				lastFramePos[j].count = 1;
+				lastFramePos[j].count--;
 				newLastFramePos.push_back(lastFramePos[j]);
 			}
 		}
@@ -92,7 +93,7 @@ void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox
 			if (obType[i] != ROAD){
 				vector<Rect> foundFiltered = mergeRect(found, score); //merge rects
 				static vector<FrameRect> lastFramePos;
-				foundFiltered = useInterframeInfo(lastFramePos, foundFiltered);
+				//foundFiltered = useInterframeInfo(lastFramePos, foundFiltered);
 
 				for (int k = 0; k < foundFiltered.size(); k++){
 					Rect r = foundFiltered[k];
