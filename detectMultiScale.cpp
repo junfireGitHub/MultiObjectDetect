@@ -22,6 +22,19 @@ static inline int getZoomNum(int imgR, int imgC, int winR, int winC, float scale
 	return zoomNum > 0 ? zoomNum : 0;
 }
 
+void calDetectCandidate(int r, int c, int range, bool a[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3]){
+	int sr = r - range >= 0 ? r - range : 0;
+	int er = r + range < MAX_IN_IMG_R >> 3 ? r + range : MAX_IN_IMG_R >> 3 - 1;
+	int sc = c - range >= 0 ? c - range : 0;
+	int ec = c + range < MAX_IN_IMG_C >> 3 ? c + range : MAX_IN_IMG_C >> 3 - 1;
+	int i = 0, j = 0;
+	for (i = sr; i <= er; ++i){
+		for (j = sc; j <= ec; ++j){
+			a[i][j] = true;
+		}
+	}
+}
+
 void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	/*zoom out image if its size is too big*/
 	//if (src.rows > MAX_IN_IMG_R || src.cols > MAX_IN_IMG_C){
@@ -57,9 +70,10 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 		float ratio = pow(scale, (float)zi);
 		afterZoomR = imgR / ratio;
 		afterZoomC = imgC / ratio;
-		
+
 		Mat srcZoom; cv::resize(srcGray, srcZoom, Size(afterZoomC, afterZoomR));
 		constructFtrIntHist(srcZoom);
+
 
 		int winStepNumR = (afterZoomR - winR) / winStrideR + 1; //tip£ºint div int is int
 		int winStepNumC = (afterZoomC - winC) / winStrideC + 1;
@@ -82,11 +96,11 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 				y = (startR + 0.5)*imgR / afterZoomR - 0.5;
 				x = (startC + 0.5)*imgC / afterZoomC - 0.5;
 				height = winR*ratio;  width = winC*ratio;
-				Rect r(x, y, width, height); 
+				Rect r(x, y, width, height);
 				found.push_back(r);
 				Bbox b = { r, score, PERSON };
 				bb.push_back(b);
-				trueWinCount++;		 		
+				trueWinCount++;
 			}
 		}
 	}
@@ -133,30 +147,36 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 	int trueWinCount = 0, totalWinCount = 0, zi = 0;
 	vector<Bbox> bb;
 	int computedWinCount = 0;
-	
+
 	const float OPT[6][5] = { //here
-		{ 128, 64, 6, 8, 1 },
-		{ 144, 72, 7, 8, 1 },
+		{ 128, 64, 8, 8, 1 },
+		{ 144, 72, 8, 8, 1 },
 		{ 152, 76, 8, 8, 1 },
 
-		{ 128, 64, 6, 8, 1.331 },
-		{ 144, 72, 7, 8, 1.331 },
+		{ 128, 64, 8, 8, 1.331 },
+		{ 144, 72, 8, 8, 1.331 },
 		{ 152, 76, 8, 8, 1.331 },
 	};
 
-	for (zi = 0; zi < 6; zi++){		
-		int newWinR =     OPT[zi][0];
-		int newWinC =     OPT[zi][1];
+	static bool isDetect[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3];
+	static int frameCount = 0;/*Í³¼ÆÖ¡Êý*/
+	const int FRAME_INTERVAL = 3;
+	if (frameCount % FRAME_INTERVAL == 0)
+		memset(isDetect, 0, sizeof(isDetect)); //here
+
+	for (zi = 0; zi < 6; zi++){
+		int newWinR = OPT[zi][0];
+		int newWinC = OPT[zi][1];
 		int newWinStepR = OPT[zi][2];
 		int newWinStepC = OPT[zi][3];
-		float ratio =     OPT[zi][4];     //float ratio = pow(scale, (float)zi);
+		float ratio = OPT[zi][4];     //float ratio = pow(scale, (float)zi);
 
 		if (zi == 3) {
 			resize(srcGray, srcGray, Size(srcC / ratio, srcR / ratio));
 			constructFtrIntHist(srcGray);
 		}
-		int imgR = srcR/ratio;
-		int imgC = srcC/ratio;//here
+		int imgR = srcR / ratio;
+		int imgC = srcC / ratio;//here
 
 		int startR = 0;
 		while (startR + newWinR <= imgR){
@@ -165,28 +185,31 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 				totalWinCount++;
 
 				bool likely = true;
-				if (detectOpt.isUseDp) { 
+				if (detectOpt.isUseDp) {
 					int x = (startC + 0.5)*ratio - 0.5;
 					int y = (startR + 0.5)*ratio - 0.5;
 					int c = newWinC*ratio;
 					int r = newWinR*ratio;
-					likely = judgeCandidate(y,x,r,c); 
+					likely = judgeCandidate(y, x, r, c);
 				}
-				if (likely){
+				int oriR = (startR + 0.5)*ratio - 0.5;
+				int oriC = (startC + 0.5)*ratio - 0.5;
+				if (likely && (frameCount % FRAME_INTERVAL == 0 || isDetect[oriR][oriC])){
 					computedWinCount++;
-					rect r = { startC, startR, newWinC, newWinR }; 
+					rect r = { startC, startR, newWinC, newWinR };
 					int ftrDim = getFtrDim(newWinR, newWinC);
 					computeFtr(imgR, imgC, r, pFtrForDetect, ftrDim);
 
-					float score = adaPersonMultiScale(pFtrForDetect, ftrDim, zi%3);//here
+					float score = adaPersonMultiScale(pFtrForDetect, ftrDim, zi % 3);//here
 					if (score > 0) {
 						trueWinCount++;
-						Rect rec( (startC + 0.5)*ratio - 0.5,
-							      (startR + 0.5)*ratio - 0.5,
-							      newWinC*ratio, newWinR*ratio );
+						Rect rec((startC + 0.5)*ratio - 0.5,
+							(startR + 0.5)*ratio - 0.5,
+							newWinC*ratio, newWinR*ratio);
 						ObjectType obType = PERSON;
 						Bbox bbTmp = { rec, score, obType };
 						bb.push_back(bbTmp);
+						calDetectCandidate(rec.y, rec.x, 24, isDetect);
 					}
 				}
 				startC += newWinStepC;
@@ -202,5 +225,6 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 		//bbNmsMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
 		bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
 	}
+	frameCount++;
 	delete[] pFtrForDetect; pFtrForDetect = NULL;
 }

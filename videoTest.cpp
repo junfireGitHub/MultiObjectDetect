@@ -43,7 +43,7 @@ void videoTest()
 	processor.setInput(videoPath);// Open video file
 	if (ONLY_SHOW){
 		// Declare a window to display the video
-		processor.displayInput("Input Video");
+		//processor.displayInput("Input Video");
 		processor.displayOutput("Output Video");
 		// Play the video at the original frame rate
 		processor.setDelay(1000. / processor.getFrameRate());

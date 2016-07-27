@@ -40,6 +40,11 @@ bool judgeCandidate(int startY , int startX, int winR, int winC){
 	int y1 = startY;
 	int y2 = startY + winR - 1;
 
+	//int x1 = startX;
+	//int x2 = startX + winC-1;
+	//int y1 = startY;
+	//int y2 = startY + winR - 1;
+
 	int sum = intHist[y2][x2] + intHist[y1][x1] - intHist[y2][x1] - intHist[y1][x2];
 	return sum > THRESHOLD;
 
@@ -51,13 +56,13 @@ static void constructIntHist(const UInt8 *pImg,  int row, int col, int threshold
 	memset(intHist,0,sizeof(intHist));
 
 	//each row accumulation
-	int watchVar = 0;
+	//int watchVar = 0;
 	int pos = 0;
 	for (j = 0 + 1; j < row + 1; j++){
 		for (i = 1; i < col + 1; i++){
 
 			intHist[j][i] = (pImg[pos + i - 1]> threshold )*1 + intHist[j][i - 1];
-			watchVar = intHist[j][i];
+			//watchVar = intHist[j][i];
 			//assert(watchVar == 0);
 		}
 		pos += col;
