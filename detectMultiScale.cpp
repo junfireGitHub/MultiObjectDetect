@@ -158,11 +158,12 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 		{ 152, 76, 8, 8, 1.331 },
 	};
 
-	static bool isDetect[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3];
+	static bool isDetect[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3];/*根据这个决定是否需要检测*/
+	static bool isDetectNew[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3]; /*用于暂时存放新的需要检测区域*/
 	static int frameCount = 0;/*统计帧数*/
-	const int FRAME_INTERVAL = 3;
-	if (frameCount % FRAME_INTERVAL == 0)
-		memset(isDetect, 0, sizeof(isDetect)); //here
+	const int FRAME_INTERVAL = 3;/*每隔多少帧需要重新检测一次*/
+	//if (frameCount % FRAME_INTERVAL == 0)
+	//	memset(isDetect, 1, sizeof(isDetect)); 
 
 	for (zi = 0; zi < 6; zi++){
 		int newWinR = OPT[zi][0];
@@ -194,7 +195,7 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 				}
 				int oriR = (startR + 0.5)*ratio - 0.5;
 				int oriC = (startC + 0.5)*ratio - 0.5;
-				if (likely && (frameCount % FRAME_INTERVAL == 0 || isDetect[oriR][oriC])){
+				if (likely && isDetect[oriR][oriC]){
 					computedWinCount++;
 					rect r = { startC, startR, newWinC, newWinR };
 					int ftrDim = getFtrDim(newWinR, newWinC);
@@ -209,7 +210,7 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 						ObjectType obType = PERSON;
 						Bbox bbTmp = { rec, score, obType };
 						bb.push_back(bbTmp);
-						calDetectCandidate(rec.y, rec.x, 24, isDetect);
+						calDetectCandidate(rec.y, rec.x, 3, isDetectNew);
 					}
 				}
 				startC += newWinStepC;
@@ -217,6 +218,10 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 			startR += newWinStepR;
 		}
 	}
+	frameCount++;
+	memcpy(isDetect, isDetectNew, sizeof(isDetectNew));
+	memset(isDetectNew, 0, sizeof(isDetectNew));
+
 	printf("totalWinCount: %d\n", totalWinCount);
 	printf("computedWinCount: %d\n", computedWinCount);
 	printf("trueWinCount: %d\n", trueWinCount);
@@ -225,6 +230,5 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 		//bbNmsMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
 		bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
 	}
-	frameCount++;
 	delete[] pFtrForDetect; pFtrForDetect = NULL;
 }
