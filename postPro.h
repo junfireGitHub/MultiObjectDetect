@@ -13,10 +13,10 @@ typedef struct Bbox{
 	ObjectType obType;
 }Bbox;
 
-void bbNmsMultiClass(cv::Mat& src, cv::vector<Bbox>& bb, bool isPostPro);
-void bbNms(cv::Mat& src, cv::vector<cv::Rect> found, bool isPostPro);
+void bbNmsMultiClass(cv::Mat& src, std::vector<Bbox>& bb, bool isPostPro);
+void bbNms(cv::Mat& src, std::vector<cv::Rect> found, bool isPostPro);
 
-void bbNmsMaxMultiClass(cv::Mat& src, cv::vector<Bbox>& bb, bool isPostPro);
-void bbNmsMax(cv::Mat& src, cv::vector<cv::Rect> found, cv::vector<float> score, bool isPostPro);
+void bbNmsMaxMultiClass(cv::Mat& src, std::vector<Bbox>& bb, bool isPostPro, std::vector<cv::Rect> &foundFiltered);
+void bbNmsMax(cv::Mat& src, std::vector<cv::Rect> found, std::vector<float> score, bool isPostPro);
 
 #endif

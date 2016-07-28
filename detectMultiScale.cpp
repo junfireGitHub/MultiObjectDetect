@@ -22,7 +22,10 @@ static inline int getZoomNum(int imgR, int imgC, int winR, int winC, float scale
 	return zoomNum > 0 ? zoomNum : 0;
 }
 
-void calDetectCandidate(int r, int c, int range, bool a[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3]){
+void calDetectCandidate(int r, int c, int range,
+	bool a[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3],
+	Uint8 w[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3],
+	int winSize){
 	int sr = r - range >= 0 ? r - range : 0;
 	int er = r + range < MAX_IN_IMG_R >> 3 ? r + range : MAX_IN_IMG_R >> 3 - 1;
 	int sc = c - range >= 0 ? c - range : 0;
@@ -31,6 +34,7 @@ void calDetectCandidate(int r, int c, int range, bool a[MAX_IN_IMG_R >> 3][MAX_I
 	for (i = sr; i <= er; ++i){
 		for (j = sc; j <= ec; ++j){
 			a[i][j] = true;
+			w[i][j] = winSize;
 		}
 	}
 }
@@ -74,7 +78,6 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 		Mat srcZoom; cv::resize(srcGray, srcZoom, Size(afterZoomC, afterZoomR));
 		constructFtrIntHist(srcZoom);
 
-
 		int winStepNumR = (afterZoomR - winR) / winStrideR + 1; //tip：int div int is int
 		int winStepNumC = (afterZoomC - winC) / winStrideC + 1;
 		int wr = 0, wc = 0;
@@ -109,8 +112,9 @@ void detectMultiScale(Mat &src, int srcR, int srcC, DetectOpt detectOpt){
 	printf("trueWinCount: %d\n", trueWinCount);
 
 	if (trueWinCount > 0){
+		vector<Rect> finalPos;
 		if (detectOpt.isGetHard)   saveHardPics(src, found);
-		else bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro);
+		else bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro, finalPos);
 	}
 
 	delete[] pFtrForDetect;
@@ -158,12 +162,19 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 		{ 152, 76, 8, 8, 1.331 },
 	};
 
-	static bool isDetect[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3];/*根据这个决定是否需要检测*/
-	static bool isDetectNew[MAX_IN_IMG_R >> 3][MAX_IN_IMG_C >> 3]; /*用于暂时存放新的需要检测区域*/
+	const int SIZE_R = MAX_IN_IMG_R >> 3;
+	const int SIZE_C = MAX_IN_IMG_C >> 3;
+	static bool isDetect[SIZE_R][SIZE_C] = { false };/*根据这个决定是否需要检测*/
+	bool isDetectNew[SIZE_R][SIZE_C] = { false }; /*用于暂时存放新的需要检测区域*/
+	Uint8 detectZoneWinSize[SIZE_R][SIZE_C] = { 0 };
+	const int FRAME_INTERVAL = 5;/*每隔多少帧需要重新检测一次*/
+	const int RANGE = 3; /*一个窗口周围多大范围内设置为需要检测，范围大小为(2*RANGE+1)*(2*RANGE+1)*/
 	static int frameCount = 0;/*统计帧数*/
-	const int FRAME_INTERVAL = 3;/*每隔多少帧需要重新检测一次*/
-	//if (frameCount % FRAME_INTERVAL == 0)
-	//	memset(isDetect, 1, sizeof(isDetect)); 
+	//if (frameCount % FRAME_INTERVAL == 0){
+	//	memset(isDetect, 1, sizeof(isDetect));
+	//	memset(detectZoneWinSize, 1, sizeof(detectZoneWinSize));
+	//}
+	memset(isDetectNew, 0, sizeof(isDetectNew));
 
 	for (zi = 0; zi < 6; zi++){
 		int newWinR = OPT[zi][0];
@@ -193,9 +204,12 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 					int r = newWinR*ratio;
 					likely = judgeCandidate(y, x, r, c);
 				}
-				int oriR = (startR + 0.5)*ratio - 0.5;
-				int oriC = (startC + 0.5)*ratio - 0.5;
-				if (likely && isDetect[oriR][oriC]){
+				unsigned int oriR = (startR + 0.5)*ratio - 0.5;
+				unsigned int oriC = (startC + 0.5)*ratio - 0.5;
+				oriR >>= 3;  oriC >>= 3;
+				if (likely && (frameCount % FRAME_INTERVAL == 0 ||
+					isDetect[oriR][oriC] && abs(detectZoneWinSize[oriR][oriC] - zi) <= 1))
+				{
 					computedWinCount++;
 					rect r = { startC, startR, newWinC, newWinR };
 					int ftrDim = getFtrDim(newWinR, newWinC);
@@ -210,7 +224,6 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 						ObjectType obType = PERSON;
 						Bbox bbTmp = { rec, score, obType };
 						bb.push_back(bbTmp);
-						calDetectCandidate(rec.y, rec.x, 3, isDetectNew);
 					}
 				}
 				startC += newWinStepC;
@@ -218,17 +231,28 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 			startR += newWinStepR;
 		}
 	}
-	frameCount++;
-	memcpy(isDetect, isDetectNew, sizeof(isDetectNew));
-	memset(isDetectNew, 0, sizeof(isDetectNew));
 
 	printf("totalWinCount: %d\n", totalWinCount);
 	printf("computedWinCount: %d\n", computedWinCount);
 	printf("trueWinCount: %d\n", trueWinCount);
 
 	if (trueWinCount > 0){
-		//bbNmsMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
-		bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro); // postProcessing
+		cv::vector<Rect> finalPos;
+		bbNmsMaxMultiClass(src, bb, detectOpt.isPostPro,finalPos); // postProcessing and show 
+		/*更新需要检测区域和对应区域的窗口大小*/
+		Uint8 ah[50];
+		ah[64-64] = 0; ah[72-64] = 1;
+		ah[76-64] = 2; ah[85-64] = 3;
+		ah[95-64] = 4; ah[101-64] = 5;
+		for (int i = 0; i < finalPos.size(); ++i){
+			Rect r = finalPos[i];
+			int zi = ah[r.width - 64];
+			printf("r.width:%d\n", r.width);
+			calDetectCandidate(r.y >> 3, r.x >> 3, RANGE, isDetectNew, detectZoneWinSize, zi);
+		}
 	}
+	frameCount++;
+	memcpy(isDetect, isDetectNew, sizeof(isDetectNew));
+
 	delete[] pFtrForDetect; pFtrForDetect = NULL;
 }

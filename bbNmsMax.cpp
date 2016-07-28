@@ -19,6 +19,7 @@ static bool isNearPos(const Rect& r1, const Rect& r2, int VAL){
 }
 
 static vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Rect> thisFramePos){
+	/*利用帧间位置的比较来调整框的位置*/
 	vector<FrameRect> newLastFramePos; //用于更新 lastFramePos
 	vector<Rect> retPos = thisFramePos;
 	for (int i = 0; i < thisFramePos.size(); ++i){
@@ -65,7 +66,7 @@ static vector<Rect> useInterframeInfo(vector<FrameRect>& lastFramePos, vector<Re
 	return retPos;
 }
 
-void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox> finalBb*/){
+void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro, vector<Rect> &foundFiltered){
 	if (!isPostPro){/*no postprocessing, just draw all rectangles*/
 		for (int i = 0; i < bb.size(); i++){
 			Rect r = bb[i].pos;
@@ -90,9 +91,9 @@ void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox
 					score.push_back(bb[j].score);
 				}
 			}
-			if (obType[i] != ROAD){
-				vector<Rect> foundFiltered = mergeRect(found, score); //merge rects
-				static vector<FrameRect> lastFramePos;
+			if (obType[i] == PERSON){
+				foundFiltered = mergeRect(found, score); //merge rects
+				//static vector<FrameRect> lastFramePos;
 				//foundFiltered = useInterframeInfo(lastFramePos, foundFiltered);
 
 				for (int k = 0; k < foundFiltered.size(); k++){
@@ -107,12 +108,12 @@ void bbNmsMaxMultiClass(Mat& src, vector<Bbox>& bb, bool isPostPro/*,vector<Bbox
 					}
 				}
 			}
-			else{//ROAD,no postprocessing
-				for (int j = 0; j < bb.size(); j++){
-					if (bb[j].obType == ROAD)
-						rectangle(src, bb[j].pos, Scalar(0, 255, 255), 1);//gray
-				}
-			}
+			//else{//ROAD,no postprocessing
+			//	for (int j = 0; j < bb.size(); j++){
+			//		if (bb[j].obType == ROAD)
+			//			rectangle(src, bb[j].pos, Scalar(0, 255, 255), 1);//gray
+			//	}
+			//}
 		}
 	}
 }
