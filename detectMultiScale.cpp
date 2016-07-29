@@ -247,7 +247,6 @@ void detectMultiClassifier(Mat &src, int row, int col, DetectOpt detectOpt){
 		for (int i = 0; i < finalPos.size(); ++i){
 			Rect r = finalPos[i];
 			int zi = ah[r.width - 64];
-			printf("r.width:%d\n", r.width);
 			calDetectCandidate(r.y >> 3, r.x >> 3, RANGE, isDetectNew, detectZoneWinSize, zi);
 		}
 	}
